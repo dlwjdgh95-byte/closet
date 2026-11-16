@@ -1,0 +1,162 @@
+# 샘플 옷장. 구조 확인용이며 사진 입력으로 실제 옷을 채우면 교체합니다.
+# 필드 설명은 docs/data-model.md를 참고하십시오.
+
+items:
+  - id: outer-001
+    name: 네이비 울 코트
+    slot: outer
+    category: coat
+    brand: cos
+    color: { primary: navy, tone: dark }
+    formality: 4
+    fit: regular
+    warmth: 5
+    pattern: solid
+    material: wool
+
+  - id: outer-002
+    name: 블랙 숏패딩
+    slot: outer
+    category: padding
+    brand: nike
+    color: { primary: black, tone: dark }
+    formality: 2
+    fit: oversized
+    warmth: 5
+    pattern: solid
+    material: nylon
+
+  - id: outer-003
+    name: 베이지 트러커 재킷
+    slot: outer
+    category: jacket
+    brand: levis
+    color: { primary: beige, tone: light }
+    formality: 2
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: cotton
+
+  - id: top-001
+    name: 화이트 옥스퍼드 셔츠
+    slot: top
+    category: shirt
+    brand: uniqlo
+    color: { primary: white, tone: light }
+    formality: 4
+    fit: regular
+    warmth: 2
+    pattern: solid
+    material: cotton
+    mood_override: [classic, minimal]   # 브랜드 기본(minimal)보다 단정한 옷
+
+  - id: top-002
+    name: 그레이 크루넥 니트
+    slot: top
+    category: knit
+    brand: uniqlo
+    color: { primary: gray, tone: medium }
+    formality: 3
+    fit: regular
+    warmth: 4
+    pattern: solid
+    material: wool
+
+  - id: top-003
+    name: 블루 스트라이프 셔츠
+    slot: top
+    category: shirt
+    brand: cos
+    color: { primary: blue, secondary: white, tone: light }
+    formality: 3
+    fit: relaxed
+    warmth: 2
+    pattern: stripe
+    material: cotton
+
+  - id: top-004
+    name: 로고 맨투맨
+    slot: top
+    category: sweatshirt
+    brand: nike
+    color: { primary: gray, tone: medium }
+    formality: 2
+    fit: oversized
+    warmth: 3
+    pattern: graphic
+    material: cotton
+
+  - id: bottom-001
+    name: 차콜 울 슬랙스
+    slot: bottom
+    category: slacks
+    brand: cos
+    color: { primary: charcoal, tone: dark }
+    formality: 4
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: wool
+
+  - id: bottom-002
+    name: 인디고 501 데님
+    slot: bottom
+    category: denim
+    brand: levis
+    color: { primary: indigo, tone: dark }
+    formality: 2
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: denim
+
+  - id: bottom-003
+    name: 베이지 치노
+    slot: bottom
+    category: chino
+    brand: uniqlo
+    color: { primary: beige, tone: light }
+    formality: 3
+    fit: slim
+    warmth: 2
+    pattern: solid
+    material: cotton
+
+  - id: shoes-001
+    name: 블랙 더비 슈즈
+    slot: shoes
+    category: derby
+    brand: dr_martens
+    color: { primary: black, tone: dark }
+    formality: 4
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: leather
+    mood_override: [classic, workwear]
+
+  - id: shoes-002
+    name: 화이트 스니커즈
+    slot: shoes
+    category: sneakers
+    brand: nike
+    color: { primary: white, tone: light }
+    formality: 2
+    fit: regular
+    warmth: 2
+    pattern: solid
+    material: leather
+    mood_override: [minimal, sporty]
+
+  - id: acc-001
+    name: 그레이 울 머플러
+    slot: accessory
+    category: muffler
+    color: { primary: gray, tone: medium }
+    formality: 3
+    fit: regular
+    warmth: 5
+    pattern: solid
+    material: wool
+    mood_override: [minimal]   # 브랜드 없는 옷은 무드를 직접 답니다

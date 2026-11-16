@@ -1,0 +1,45 @@
+# 브랜드 프로필. 옷은 brand 키만 갖고, 무드·격식·실루엣 성향은 여기서 물려받습니다.
+# 아래는 구조 확인용 샘플이며, 실제로 입는 브랜드로 교체합니다.
+#
+# 필드
+#   name        표시 이름
+#   moods       무드 태그 1~3개 (data/moods.yaml의 키)
+#   formality   이 브랜드 옷의 기본 격식 범위 [최소, 최대]
+#   silhouette  실루엣 성향: slim | regular | relaxed
+#   note        브랜드가 추구하는 관점 한 줄
+
+brands:
+  uniqlo:
+    name: 유니클로
+    moods: [minimal]
+    formality: [2, 3]
+    silhouette: regular
+    note: 무난한 기본기, 어디에나 받쳐 입는 베이직
+
+  cos:
+    name: COS
+    moods: [minimal, contemporary]
+    formality: [3, 4]
+    silhouette: relaxed
+    note: 절제된 색과 건축적인 선
+
+  levis:
+    name: 리바이스
+    moods: [amekaji, workwear]
+    formality: [2, 3]
+    silhouette: regular
+    note: 데님 원류, 오래 입을수록 멋이 나는 옷
+
+  nike:
+    name: 나이키
+    moods: [sporty, street]
+    formality: [1, 2]
+    silhouette: regular
+    note: 퍼포먼스에서 온 스트리트 감성
+
+  dr_martens:
+    name: 닥터마틴
+    moods: [workwear, street]
+    formality: [2, 3]
+    silhouette: regular
+    note: 튼튼한 워크부츠, 반항적인 무드
