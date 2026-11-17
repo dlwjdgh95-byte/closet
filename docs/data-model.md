@@ -9,9 +9,12 @@
 | `data/wardrobe.yaml` | 옷 목록 (한 벌에 한 항목) |
 | `data/brands.yaml` | 브랜드 프로필 (무드, 기본 격식, 실루엣 성향, 관점) |
 | `data/moods.yaml` | 무드 태그 사전과 무드 간 궁합 |
-| `data/colors.yaml` | 색 사전 (무채색 여부 포함) |
-| `data/tpo.yaml` | TPO별 허용 격식 범위 |
+| `data/colors.yaml` | 색 사전 (기본색 여부, 색 계열) |
+| `data/tpo.yaml` | TPO별 허용 격식 범위와 목표 격식 |
+| `data/scoring.yaml` | 추천 점수 가중치와 날씨 규칙 ([추천 로직](recommendation.md)) |
 | `scripts/validate.py` | 위 파일들의 형식 검증 |
+
+현재 브랜드 15개와 옷 52벌은 실제 브랜드를 바탕으로 만든 가상의 샘플입니다.
 
 ## 슬롯
 
@@ -40,8 +43,8 @@
 | `color.secondary` | 선택, 패턴의 두 번째 색 | 색 조합 |
 | `color.tone` | `light` / `medium` / `dark` | 명암 대비 |
 | `formality` | 1~5 (아래 척도) | TPO 필터, 격식 일관성 |
-| `fit` | `slim` / `regular` / `relaxed` / `oversized` | 실루엣 균형 |
-| `warmth` | 1~5 (아래 척도) | 날씨·계절 |
+| `fit` | `slim` / `regular` / `relaxed` / `oversized` (액세서리는 생략) | 실루엣 균형 |
+| `warmth` | 1~5 (아래 척도). 가방·모자처럼 계절을 타지 않는 액세서리는 생략 | 날씨·계절 |
 | `pattern` | `solid` / `stripe` / `check` / `dot` / `graphic` / `other` | 패턴 충돌 방지 |
 | `material` | `cotton`, `wool`, `denim` 등 | 계절감, 격식 보정 |
 | `mood_override` | 선택, 무드 태그 1~3개 | 브랜드 전형과 다른 옷의 무드 |
@@ -60,7 +63,7 @@
 | 4 | 비즈니스 캐주얼 | 옥스퍼드 셔츠, 슬랙스, 울 코트 |
 | 5 | 정장 | 수트, 넥타이, 드레스 슈즈 |
 
-### 보온도 척도 (추천 로직에서 조정 예정)
+### 보온도 척도 (기온 구간은 `scoring.yaml`에서 조정)
 
 | 값 | 대략의 기온 | 예시 |
 |---|---|---|
@@ -74,11 +77,11 @@
 
 TPO는 옷에 태그하지 않고 허용 격식 범위로 표현합니다. 코디의 모든 옷이 범위 안에 들어야 후보가 됩니다.
 
-| TPO | 격식 범위 | 근거 |
-|---|---|---|
-| 출퇴근 | 2~4 | 복장 자유, 추리닝만 제외 |
-| 친목모임 | 2~3 | 편하고 단정하게 |
-| 데이트 | 3~4 | 한 단계 갖춰서 |
+| TPO | 격식 범위 | 목표 평균 | 근거 |
+|---|---|---|---|
+| 출퇴근 | 2~4 | 3 | 복장 자유, 추리닝만 제외 |
+| 친목모임 | 2~3 | 2.5 | 편하고 단정하게 |
+| 데이트 | 3~4 | 3.5 | 한 단계 갖춰서 |
 
 ## 브랜드 프로필 (`brands.yaml`)
 
@@ -97,11 +100,11 @@ TPO는 옷에 태그하지 않고 허용 격식 범위로 표현합니다. 코�
 
 무드 일관성은 색·격식·핏에 이은 네 번째 밸런스 축입니다. 같은 무드끼리와 `good` 쌍은 가점, `clash` 쌍은 감점, 나머지는 중립입니다. 태그 목록은 실제로 입는 브랜드가 정해지면 다듬습니다.
 
-## 밸런스 축 요약 (3단계 추천 로직의 입력)
+## 밸런스 축 요약 (추천 로직의 입력)
 
 | 축 | 사용 필드 |
 |---|---|
-| 색 조합 | `color.primary`, `color.secondary`, `color.tone`, `colors.neutral`, `pattern` |
+| 색 조합 | `color.primary`, `color.secondary`, `color.tone`, `colors.neutral`, `colors.family`, `pattern` |
 | 격식 | `formality` (TPO 범위 + 옷 간 편차) |
 | 핏 | `fit` (위아래 실루엣 균형) |
 | 무드 | `mood_override` 또는 브랜드 `moods` |

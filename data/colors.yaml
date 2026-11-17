@@ -1,5 +1,6 @@
 # 색 사전. 옷의 color.primary / color.secondary는 이 키만 씁니다.
 # neutral: 무채색·기본색 여부 (어떤 색과도 무난하게 어울림)
+# family: 유채색의 계열. 같은 계열은 한 가지 색으로 셉니다(톤온톤).
 
 colors:
   black:    { label: 블랙,   neutral: true }
@@ -11,14 +12,14 @@ colors:
   ivory:    { label: 아이보리, neutral: true }
   brown:    { label: 브라운, neutral: true }
   indigo:   { label: 인디고(데님), neutral: true }
-  khaki:    { label: 카키,   neutral: false }
-  olive:    { label: 올리브, neutral: false }
-  blue:     { label: 블루,   neutral: false }
-  skyblue:  { label: 스카이블루, neutral: false }
-  green:    { label: 그린,   neutral: false }
-  red:      { label: 레드,   neutral: false }
-  burgundy: { label: 버건디, neutral: false }
-  pink:     { label: 핑크,   neutral: false }
-  yellow:   { label: 옐로,   neutral: false }
-  orange:   { label: 오렌지, neutral: false }
-  purple:   { label: 퍼플,   neutral: false }
+  khaki:    { label: 카키,   neutral: false, family: green }
+  olive:    { label: 올리브, neutral: false, family: green }
+  blue:     { label: 블루,   neutral: false, family: blue }
+  skyblue:  { label: 스카이블루, neutral: false, family: blue }
+  green:    { label: 그린,   neutral: false, family: green }
+  red:      { label: 레드,   neutral: false, family: red }
+  burgundy: { label: 버건디, neutral: false, family: red }
+  pink:     { label: 핑크,   neutral: false, family: red }
+  yellow:   { label: 옐로,   neutral: false, family: yellow }
+  orange:   { label: 오렌지, neutral: false, family: orange }
+  purple:   { label: 퍼플,   neutral: false, family: purple }

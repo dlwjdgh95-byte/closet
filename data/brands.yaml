@@ -1,5 +1,5 @@
 # 브랜드 프로필. 옷은 brand 키만 갖고, 무드·격식·실루엣 성향은 여기서 물려받습니다.
-# 아래는 구조 확인용 샘플이며, 실제로 입는 브랜드로 교체합니다.
+# 아래는 실제 브랜드를 바탕으로 한 샘플이며, 실제로 입는 브랜드에 맞춰 고칩니다.
 #
 # 필드
 #   name        표시 이름
@@ -15,31 +15,87 @@ brands:
     formality: [2, 3]
     silhouette: regular
     note: 무난한 기본기, 어디에나 받쳐 입는 베이직
-
+  musinsa_standard:
+    name: 무신사 스탠다드
+    moods: [minimal, contemporary]
+    formality: [2, 4]
+    silhouette: regular
+    note: 합리적인 가격의 깔끔한 기본 아이템
   cos:
     name: COS
     moods: [minimal, contemporary]
     formality: [3, 4]
     silhouette: relaxed
     note: 절제된 색과 건축적인 선
-
+  lemaire:
+    name: 르메르
+    moods: [minimal, contemporary]
+    formality: [3, 4]
+    silhouette: relaxed
+    note: 차분한 색과 여유 있는 드레이프
+  polo_ralph_lauren:
+    name: 폴로 랄프 로렌
+    moods: [classic, preppy]
+    formality: [3, 4]
+    silhouette: regular
+    note: 미국 동부의 단정한 클래식
+  beams_plus:
+    name: 빔즈 플러스
+    moods: [amekaji, preppy]
+    formality: [2, 4]
+    silhouette: regular
+    note: 미국 옛 캐주얼을 일본식으로 다듬은 옷
   levis:
     name: 리바이스
     moods: [amekaji, workwear]
     formality: [2, 3]
     silhouette: regular
     note: 데님 원류, 오래 입을수록 멋이 나는 옷
-
+  carhartt_wip:
+    name: 칼하트 WIP
+    moods: [workwear, street]
+    formality: [2, 3]
+    silhouette: relaxed
+    note: 작업복을 거리의 옷으로
+  stussy:
+    name: 스투시
+    moods: [street]
+    formality: [1, 2]
+    silhouette: relaxed
+    note: 서프와 스케이트에서 온 원조 스트리트
   nike:
     name: 나이키
     moods: [sporty, street]
     formality: [1, 2]
     silhouette: regular
     note: 퍼포먼스에서 온 스트리트 감성
-
+  new_balance:
+    name: 뉴발란스
+    moods: [sporty, classic]
+    formality: [2, 3]
+    silhouette: regular
+    note: 점잖은 회색 러닝화, 어른의 스니커즈
+  arcteryx:
+    name: 아크테릭스
+    moods: [techwear]
+    formality: [2, 3]
+    silhouette: regular
+    note: 기능이 곧 디자인인 아웃도어
+  salomon:
+    name: 살로몬
+    moods: [techwear, sporty]
+    formality: [1, 2]
+    silhouette: regular
+    note: 트레일 러닝화가 도시로 내려온 고프코어
   dr_martens:
     name: 닥터마틴
     moods: [workwear, street]
     formality: [2, 3]
     silhouette: regular
     note: 튼튼한 워크부츠, 반항적인 무드
+  paraboot:
+    name: 파라부트
+    moods: [classic, workwear]
+    formality: [3, 4]
+    silhouette: regular
+    note: 투박하지만 격식 있는 프랑스 구두
