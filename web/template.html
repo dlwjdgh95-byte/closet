@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
-/* 레이아웃: 어두운 방 한가운데 호두나무 옷장 하나. 조건은 위, 옷장은 가운데, 뽑힌 코디의 설명은 아래. */
+/* 레이아웃: 어두운 방 한가운데 호두나무 옷장 하나. 그 아래 조건 한 줄. 그 밖의 글은 없음. */
 :root {
   color-scheme: dark;
   --room: #121a17;          /* 벽지 */
@@ -39,20 +39,8 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
 }
-header { text-align: center; }
-h1 {
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: clamp(28px, 7vw, 40px);
-  letter-spacing: 0.04em;
-  margin: 0;
-  color: var(--brass);
-  text-wrap: balance;
-}
-header p { margin: 4px 0 0; color: var(--muted); }
-
 /* ---------- 조건 ---------- */
 .controls {
   display: flex;
@@ -60,10 +48,6 @@ header p { margin: 4px 0 0; color: var(--muted); }
   gap: 14px 22px;
   align-items: center;
   justify-content: center;
-  background: var(--panel);
-  border: 1px solid var(--panel-line);
-  border-radius: 4px;
-  padding: 14px 16px;
 }
 .controls fieldset { border: 0; padding: 0; margin: 0; display: flex; gap: 6px; min-width: 0; }
 .controls legend, .label {
@@ -104,7 +88,7 @@ header p { margin: 4px 0 0; color: var(--muted); }
   border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f1d894, var(--brass) 55%, var(--brass-dim));
 }
 .cabinet {
-  position: relative; aspect-ratio: 5 / 6;
+  position: relative; aspect-ratio: 5 / 6.6; cursor: pointer;
   border: 12px solid var(--wood-deep);
   border-top-width: 8px;
   background: var(--inside);
@@ -115,21 +99,22 @@ header p { margin: 4px 0 0; color: var(--muted); }
   background: radial-gradient(ellipse at 50% 30%, var(--inside-lit), var(--inside) 75%);
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1.3fr 1fr;
-  gap: 2% 3%;
-  padding: 9% 6% 5%;
+  grid-template-rows: 1.25fr 1fr;
+  gap: 3% 3%;
+  padding: 9% 5% 4%;
 }
 .rail {
   position: absolute; left: 4%; right: 4%; top: 5.5%; height: 5px; border-radius: 3px;
   background: linear-gradient(#f1d894, var(--brass) 40%, var(--brass-dim));
 }
-.piece { min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
-.piece svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 6px 8px rgba(0,0,0,.45)); }
+.piece { min-width: 0; min-height: 0; margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0; }
+.piece svg { width: 100%; flex: 1 1 0; min-height: 0; overflow: visible; filter: drop-shadow(0 6px 8px rgba(0,0,0,.45)); }
+.piece figcaption { flex: none; font-size: clamp(11px, 2.9vw, 13.5px); line-height: 1.3; text-align: center; color: var(--paper); text-wrap: balance; }
+.piece figcaption b { font-weight: 500; color: var(--muted); }
 .piece.wide { grid-column: 1 / -1; }
 .piece.wide svg { width: 56%; }
 .small { display: grid; grid-template-rows: 1fr 1fr; gap: 4%; min-height: 0; }
 .small.solo { grid-template-rows: 1fr; }
-.small .piece svg { height: 100%; }
 .cabinet.open .piece { animation: pop .55s cubic-bezier(.2,1.4,.4,1) forwards; animation-delay: calc(.55s + var(--i) * .16s); }
 @keyframes pop { from { opacity: 0; transform: translateY(14px) scale(.86); } to { opacity: 1; transform: none; } }
 
@@ -186,54 +171,7 @@ header p { margin: 4px 0 0; color: var(--muted); }
 .feet i { width: 26px; height: 14px; background: var(--wood-deep); border-radius: 0 0 8px 8px; }
 .floor { height: 10px; margin-top: -2px; background: radial-gradient(ellipse at center, rgba(0,0,0,.6), transparent 70%); }
 
-.pull {
-  align-self: center;
-  font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: 0.08em;
-  color: var(--wood-deep); background: linear-gradient(#f1d894, var(--brass));
-  border: 0; border-radius: 4px; padding: 11px 34px; cursor: pointer;
-  box-shadow: 0 3px 0 var(--brass-dim), 0 8px 18px rgba(0,0,0,.4);
-}
-.pull:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--brass-dim); }
-.pull[disabled] { opacity: .55; cursor: default; }
-.hint { text-align: center; color: var(--muted); margin: -8px 0 0; min-height: 1.6em; }
-
-/* ---------- 결과 ---------- */
-.result {
-  background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px;
-  padding: 18px; display: flex; flex-direction: column; gap: 16px;
-}
-.result.in { animation: rise .5s ease-out; }
-@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.verdict { display: flex; gap: 14px; align-items: center; }
-.seal {
-  flex: none; width: 58px; height: 58px; border-radius: 50%;
-  display: grid; place-items: center;
-  font-family: var(--display); font-weight: 700; font-size: 28px; color: var(--wood-deep);
-  background: radial-gradient(circle at 35% 30%, #f6e2a6, var(--brass) 60%, var(--brass-dim));
-  box-shadow: 0 0 0 3px var(--panel), 0 0 0 4px var(--brass-dim);
-}
-.seal.b { filter: saturate(.35) brightness(1.1); }
-.seal.c { filter: saturate(.1) brightness(.8); }
-.verdict h2 { font-family: var(--display); font-size: 21px; margin: 0; line-height: 1.3; }
-.verdict p { margin: 2px 0 0; color: var(--muted); font-variant-numeric: tabular-nums; }
-.items { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
-.items li {
-  display: grid; grid-template-columns: 4.2em 16px 1fr; gap: 10px; align-items: center;
-  padding: 7px 0; border-top: 1px solid var(--panel-line);
-}
-.items .slot { font-size: 12px; letter-spacing: 0.1em; color: var(--muted); }
-.items .dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(239,230,210,.4); }
-.items .name { min-width: 0; }
-.items .brand { color: var(--muted); font-size: 13px; margin-left: 6px; white-space: nowrap; }
-.axes { display: grid; gap: 10px; margin: 0; }
-.axis { display: grid; grid-template-columns: 2.6em 1fr 2.6em; gap: 4px 10px; align-items: center; }
-.axis dt { font-weight: 600; }
-.axis .bar { height: 6px; background: var(--panel-line); border-radius: 3px; overflow: hidden; }
-.axis .bar i { display: block; height: 100%; background: var(--brass); border-radius: 3px; }
-.axis .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
-.axis dd { grid-column: 2 / -1; margin: 0; color: var(--muted); font-size: 13px; }
-.weather { margin: 0; padding: 9px 12px; border-left: 3px solid var(--brass); background: rgba(201,165,93,.08); }
-.note { color: var(--muted); font-size: 12.5px; text-align: center; margin: 0; }
+.empty { text-align: center; color: var(--muted); margin: 0; }
 
 @media (max-width: 460px) {
   .controls { justify-content: flex-start; }
@@ -248,25 +186,6 @@ header p { margin: 4px 0 0; color: var(--muted); }
 </style>
 
 <main class="wrap">
-  <header>
-    <h1>오늘의 옷장</h1>
-    <p>어디 가는지와 날씨를 고르고 옷장을 열어 보세요.</p>
-  </header>
-
-  <form class="controls" id="controls">
-    <fieldset>
-      <legend>어디로</legend>
-      <span id="tpo-pills"></span>
-    </fieldset>
-    <div class="temp">
-      <label class="label" for="temp">체감기온</label>
-      <input type="range" id="temp" min="-10" max="35" step="1" value="8">
-      <output id="temp-out" for="temp">8℃</output>
-    </div>
-    <label class="check"><input type="checkbox" id="rain"><span>비 와요</span></label>
-    <label class="check"><input type="checkbox" id="sound" checked><span>소리</span></label>
-  </form>
-
   <div class="stage">
     <div class="wardrobe" id="wardrobe">
       <div class="crown"></div>
@@ -282,18 +201,32 @@ header p { margin: 4px 0 0; color: var(--muted); }
     </div>
   </div>
 
-  <button type="button" class="pull" id="pull">옷장 열기</button>
-  <p class="hint" id="hint" aria-live="polite"></p>
-
-  <section class="result" id="result" hidden aria-live="polite"></section>
-  <p class="note">샘플 옷장으로 만든 추천입니다. 옷 그림은 종류와 색을 따라 그린 것입니다.</p>
+  <form class="controls" id="controls">
+    <fieldset>
+      <legend>어디로</legend>
+      <span id="tpo-pills"></span>
+    </fieldset>
+    <div class="temp">
+      <label class="label" for="temp">체감기온</label>
+      <input type="range" id="temp" min="-10" max="35" step="1" value="8">
+      <output id="temp-out" for="temp">8℃</output>
+    </div>
+    <label class="check"><input type="checkbox" id="rain"><span>비</span></label>
+    <label class="check"><input type="checkbox" id="sound" checked><span>소리</span></label>
+  </form>
+  <p class="empty" id="empty" hidden>이 조건에 맞는 옷이 없습니다.</p>
 </main>
 
 <script>
 const DATA = /*__DATA__*/null;
 
-const SLOT_LABEL = { outer: "아우터", top: "상의", bottom: "하의", shoes: "신발", accessory: "액세서리" };
-const AXIS_LABEL = { color: "색", formality: "격식", fit: "핏", mood: "무드" };
+const KIND = {
+  coat: "코트", padding: "패딩", jacket: "자켓", blazer: "블레이저", shell: "바람막이", cardigan: "가디건",
+  shirt: "셔츠", knit: "니트", sweatshirt: "맨투맨", tshirt: "티셔츠", hoodie: "후디", polo: "피케 셔츠",
+  slacks: "슬랙스", denim: "데님", chino: "치노", sweatpants: "스웨트팬츠", workpants: "워크팬츠",
+  shorts: "쇼츠", corduroy: "코듀로이", cargo: "카고", derby: "더비", sneakers: "스니커즈", boots: "부츠",
+  loafer: "로퍼", sandals: "샌들", muffler: "머플러", bag: "가방", cap: "모자",
+};
 const FIT_W = { slim: 0.9, regular: 1, relaxed: 1.09, oversized: 1.18 };
 const $ = (id) => document.getElementById(id);
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -464,12 +397,12 @@ function outfits() {
   const key = [state.tpo, warmthFor(+$("temp").value), $("rain").checked ? 1 : 0].join("|");
   return DATA.scenarios[key] || [];
 }
-function grade(total) { return total >= 0.95 ? "S" : total >= 0.91 ? "A" : total >= 0.85 ? "B" : "C"; }
 
 function renderInterior(o) {
   const it = (slot) => o.items[slot] && DATA.items[o.items[slot]];
   let i = 0;
-  const piece = (item, cls = "") => `<div class="piece ${cls}" style="--i:${i++}">${garment(item)}</div>`;
+  const caption = (item) => `<b>${KIND[item.category] || item.category}${item.brand ? ":" : ""}</b>` + (item.brand ? " " + DATA.brands[item.brand] : "");
+  const piece = (item, cls = "") => `<figure class="piece ${cls}" style="--i:${i++}">${garment(item)}<figcaption>${caption(item)}</figcaption></figure>`;
   let html = '<div class="rail"></div>';
   html += it("outer") ? piece(it("outer")) + piece(it("top")) : piece(it("top"), "wide");
   html += piece(it("bottom"));
@@ -477,33 +410,9 @@ function renderInterior(o) {
   $("interior").innerHTML = html;
 }
 
-function renderResult(o, list) {
-  const rank = state.index + 1;
-  const g = grade(o.total);
-  const rows = ["outer", "top", "bottom", "shoes", "accessory"].filter((s) => o.items[s]).map((s) => {
-    const item = DATA.items[o.items[s]];
-    const brand = item.brand ? `<span class="brand">${DATA.brands[item.brand]}</span>` : "";
-    return `<li><span class="slot">${SLOT_LABEL[s]}</span><span class="dot" style="background:${DATA.colors[item.color.primary].hex}"></span><span class="name">${item.name}${brand}</span></li>`;
-  }).join("");
-  const axes = Object.keys(AXIS_LABEL).map((a) =>
-    `<div class="axis"><dt>${AXIS_LABEL[a]}</dt><div class="bar"><i style="width:${Math.round(o.scores[a] * 100)}%"></i></div><span class="num">${Math.round(o.scores[a] * 100)}</span><dd>${o.reasons[a]}</dd></div>`).join("");
-  const el = $("result");
-  el.innerHTML =
-    `<div class="verdict"><div class="seal ${g.toLowerCase()}" aria-label="등급 ${g}">${g}</div>` +
-    `<div><h2>${rank}순위 코디</h2><p>밸런스 ${Math.round(o.total * 100)}점 · ${list.length}개 중 ${rank}번째</p></div></div>` +
-    `<p class="weather">날씨 먼저: ${o.reasons.weather}</p>` +
-    `<ul class="items">${rows}</ul><dl class="axes">${axes}</dl>`;
-  el.hidden = false;
-  el.classList.remove("in"); void el.offsetWidth; el.classList.add("in");
-}
-
-function setHint() {
-  const list = outfits();
-  const temp = +$("temp").value;
-  const label = `${DATA.tpo[state.tpo]}, 체감 ${temp}℃${$("rain").checked ? ", 비" : ""}`;
-  $("hint").textContent = list.length ? `${label}에 맞는 코디 ${list.length}개가 옷장 안에 있습니다.` : `${label}에 맞는 코디가 없습니다. 조건을 바꿔 보세요.`;
-  $("pull").disabled = !list.length || state.busy;
-  $("pull").textContent = state.open ? "다시 뽑기" : "옷장 열기";
+function sync() {
+  $("temp-out").textContent = $("temp").value + "℃";
+  $("empty").hidden = outfits().length > 0;
 }
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -518,7 +427,7 @@ async function close() {
 async function pull() {
   const list = outfits();
   if (state.busy || !list.length) return;
-  state.busy = true; setHint();
+  state.busy = true;
   if (state.open) { state.index = (state.index + 1) % list.length; await close(); }
   const o = list[state.index];
   const roll = reduced ? 0 : 1500;
@@ -532,16 +441,13 @@ async function pull() {
   $("cabinet").classList.add("open");
   state.open = true;
   await wait(reduced ? 0 : 900);
-  renderResult(o, list);
-  state.busy = false; setHint();
+  state.busy = false;
 }
 
 async function reset() {
   state.index = 0;
-  $("temp-out").textContent = $("temp").value + "℃";
-  $("result").hidden = true;
+  sync();
   if (!state.busy) await close();
-  setHint();
 }
 
 $("tpo-pills").outerHTML = Object.entries(DATA.tpo).map(([k, label], i) =>
@@ -552,6 +458,6 @@ $("controls").addEventListener("input", (e) => {
   reset();
 });
 $("controls").addEventListener("submit", (e) => e.preventDefault());
-["pull", "door-l", "door-r"].forEach((id) => $(id).addEventListener("click", pull));
-setHint();
+$("cabinet").addEventListener("click", pull);   // 닫혀 있으면 열고, 열려 있으면 다음 코디
+sync();
 </script>
