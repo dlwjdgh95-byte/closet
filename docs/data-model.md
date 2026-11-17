@@ -9,9 +9,9 @@
 | `data/wardrobe.yaml` | 옷 목록 (한 벌에 한 항목) |
 | `data/brands.yaml` | 브랜드 프로필 (무드, 기본 격식, 실루엣 성향, 관점) |
 | `data/moods.yaml` | 무드 태그 사전과 무드 간 궁합 |
-| `data/colors.yaml` | 색 사전 (기본색 여부, 색 계열) |
+| `data/colors.yaml` | 색 사전 (기본색 여부, 색 계열, 화면용 색상값) |
 | `data/tpo.yaml` | TPO별 허용 격식 범위와 목표 격식 |
-| `data/scoring.yaml` | 추천 점수 가중치와 날씨 규칙 ([추천 로직](recommendation.md)) |
+| `data/scoring.yaml` | 날씨 필터 규칙과 밸런스 점수 가중치 ([추천 로직](recommendation.md)) |
 | `scripts/validate.py` | 위 파일들의 형식 검증 |
 
 현재 브랜드 15개와 옷 52벌은 실제 브랜드를 바탕으로 만든 가상의 샘플입니다.
@@ -108,7 +108,7 @@ TPO는 옷에 태그하지 않고 허용 격식 범위로 표현합니다. 코�
 | 격식 | `formality` (TPO 범위 + 옷 간 편차) |
 | 핏 | `fit` (위아래 실루엣 균형) |
 | 무드 | `mood_override` 또는 브랜드 `moods` |
-| 날씨 | `warmth`, `material` |
+| 날씨(점수가 아닌 필터) | `warmth`, `material` |
 
 ## 사진 입력 흐름
 

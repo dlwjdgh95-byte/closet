@@ -21,6 +21,7 @@ def build_prompt(closet, ctx, outfits):
                 brand = closet.brands.get(it.get("brand"), {})
                 note = f" / {brand['name']}: {brand['note']}" if brand else ""
                 lines.append(f"- {it['name']} [{', '.join(it['moods'])}]{note}")
-        lines.append("  " + ", ".join(f"{AXIS_LABELS[k]} {v:.2f}" for k, v in o.scores.items()))
+        lines.append("  " + ", ".join(f"{AXIS_LABELS[k]} {v:.2f}" for k, v in o.scores.items())
+                     + f", 날씨: {o.reasons['weather']}")
         lines.append("")
     return "\n".join(lines)

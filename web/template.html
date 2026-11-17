@@ -1,0 +1,557 @@
+<title>오늘의 옷장</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 레이아웃: 어두운 방 한가운데 호두나무 옷장 하나. 조건은 위, 옷장은 가운데, 뽑힌 코디의 설명은 아래. */
+:root {
+  color-scheme: dark;
+  --room: #121a17;          /* 벽지 */
+  --room-line: #18231f;
+  --wood: #5a3620;          /* 호두나무 */
+  --wood-deep: #2c190e;
+  --wood-light: #7a4d2e;
+  --inside: #1a110b;        /* 옷장 안 */
+  --inside-lit: #4a301b;
+  --brass: #c9a55d;
+  --brass-dim: #8a6f3a;
+  --paper: #efe6d2;         /* 글자 */
+  --muted: #a89c84;
+  --panel: #1b2420;
+  --panel-line: #2c3832;
+  --display: "Gowun Batang", "Noto Serif KR", Georgia, serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 46px, var(--room-line) 46px 48px),
+    var(--room);
+  color: var(--paper);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.wrap {
+  max-width: 680px;
+  margin-inline: auto;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+header { text-align: center; }
+h1 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(28px, 7vw, 40px);
+  letter-spacing: 0.04em;
+  margin: 0;
+  color: var(--brass);
+  text-wrap: balance;
+}
+header p { margin: 4px 0 0; color: var(--muted); }
+
+/* ---------- 조건 ---------- */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+.controls fieldset { border: 0; padding: 0; margin: 0; display: flex; gap: 6px; min-width: 0; }
+.controls legend, .label {
+  font-size: 12px; letter-spacing: 0.12em; color: var(--muted);
+}
+.controls legend { float: left; margin-right: 10px; padding: 0; line-height: 34px; }
+.pill input { position: absolute; opacity: 0; pointer-events: none; }
+.pill span {
+  display: block; padding: 5px 13px; border: 1px solid var(--brass-dim); border-radius: 999px;
+  cursor: pointer; color: var(--paper); white-space: nowrap;
+}
+.pill input:checked + span { background: var(--brass); color: var(--wood-deep); border-color: var(--brass); font-weight: 600; }
+.pill input:focus-visible + span, button:focus-visible, input[type=range]:focus-visible, .check input:focus-visible + span {
+  outline: 2px solid var(--paper); outline-offset: 2px;
+}
+.temp { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.temp input { width: 150px; max-width: 40vw; accent-color: var(--brass); }
+.temp output { font-variant-numeric: tabular-nums; min-width: 4.2em; font-weight: 600; }
+.check { display: inline-flex; }
+.check input { position: absolute; opacity: 0; pointer-events: none; }
+.check span {
+  padding: 5px 12px; border: 1px solid var(--panel-line); border-radius: 4px; cursor: pointer; color: var(--muted);
+}
+.check input:checked + span { border-color: var(--brass); color: var(--brass); }
+
+/* ---------- 옷장 ---------- */
+.stage { overflow: hidden; padding: 6px 0 0; }
+.wardrobe { width: min(100%, 440px); margin-inline: auto; position: relative; }
+.crown {
+  height: 46px; margin-inline: -8px;
+  background: linear-gradient(var(--wood-light), var(--wood) 55%, var(--wood-deep));
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  border-bottom: 5px solid var(--wood-deep);
+  position: relative;
+}
+.crown::after {
+  content: ""; position: absolute; left: 50%; top: 13px; width: 18px; height: 18px; margin-left: -9px;
+  border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f1d894, var(--brass) 55%, var(--brass-dim));
+}
+.cabinet {
+  position: relative; aspect-ratio: 5 / 6;
+  border: 12px solid var(--wood-deep);
+  border-top-width: 8px;
+  background: var(--inside);
+  perspective: 1300px;
+}
+.interior {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, var(--inside-lit), var(--inside) 75%);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1.3fr 1fr;
+  gap: 2% 3%;
+  padding: 9% 6% 5%;
+}
+.rail {
+  position: absolute; left: 4%; right: 4%; top: 5.5%; height: 5px; border-radius: 3px;
+  background: linear-gradient(#f1d894, var(--brass) 40%, var(--brass-dim));
+}
+.piece { min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
+.piece svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 6px 8px rgba(0,0,0,.45)); }
+.piece.wide { grid-column: 1 / -1; }
+.piece.wide svg { width: 56%; }
+.small { display: grid; grid-template-rows: 1fr 1fr; gap: 4%; min-height: 0; }
+.small.solo { grid-template-rows: 1fr; }
+.small .piece svg { height: 100%; }
+.cabinet.open .piece { animation: pop .55s cubic-bezier(.2,1.4,.4,1) forwards; animation-delay: calc(.55s + var(--i) * .16s); }
+@keyframes pop { from { opacity: 0; transform: translateY(14px) scale(.86); } to { opacity: 1; transform: none; } }
+
+.door {
+  position: absolute; top: 0; bottom: 0; width: 50%;
+  background:
+    repeating-linear-gradient(92deg, rgba(0,0,0,.10) 0 2px, transparent 2px 9px),
+    linear-gradient(100deg, var(--wood-light), var(--wood) 45%, var(--wood-deep));
+  transition: transform 1s cubic-bezier(.3,.1,.2,1);
+  backface-visibility: hidden;
+  cursor: pointer;
+  border: 0; padding: 0;
+}
+.door.left { left: 0; transform-origin: left center; box-shadow: inset -2px 0 0 var(--wood-deep); }
+.door.right { right: 0; transform-origin: right center; box-shadow: inset 2px 0 0 var(--wood-deep); }
+.door::before {
+  content: ""; position: absolute; inset: 7% 12%;
+  border: 3px solid var(--wood-deep);
+  border-radius: 45% 45% 3px 3px / 16% 16% 3px 3px;
+  box-shadow: inset 0 0 0 5px rgba(122,77,46,.55), inset 0 0 26px rgba(0,0,0,.35);
+}
+.door::after {
+  content: ""; position: absolute; top: 50%; width: 12px; height: 34px; margin-top: -17px; border-radius: 6px;
+  background: linear-gradient(90deg, #f1d894, var(--brass) 45%, var(--brass-dim));
+  box-shadow: 0 2px 4px rgba(0,0,0,.5);
+}
+.door.left::after { right: 9px; }
+.door.right::after { left: 9px; }
+.cabinet.open .door.left { transform: rotateY(-112deg); }
+.cabinet.open .door.right { transform: rotateY(112deg); }
+
+.seam {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px; z-index: 2;
+  background: #ffe9ad; opacity: 0; pointer-events: none; filter: blur(3px);
+}
+.cabinet.rolling .seam { animation: leak var(--roll, 1.5s) ease-in forwards; }
+@keyframes leak { 0% { opacity: 0; } 100% { opacity: 1; box-shadow: 0 0 34px 12px #ffdc85; } }
+.wardrobe.rolling { animation: rattle var(--roll, 1.5s) linear; }
+@keyframes rattle {
+  0%,100% { transform: none; }
+  10% { transform: translateX(-1px) rotate(-.2deg); } 20% { transform: translateX(1px) rotate(.2deg); }
+  30% { transform: translateX(-2px) rotate(-.4deg); } 40% { transform: translateX(2px) rotate(.4deg); }
+  50% { transform: translateX(-3px) rotate(-.6deg); } 60% { transform: translateX(3px) rotate(.6deg); }
+  70% { transform: translateX(-4px) rotate(-.9deg); } 80% { transform: translateX(4px) rotate(.9deg); }
+  90% { transform: translateX(-5px) rotate(-1.1deg); } 95% { transform: translateX(5px) rotate(1.1deg); }
+}
+.burst {
+  position: absolute; inset: -30%; z-index: 3; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #fff3c9 0, rgba(255,220,133,.75) 22%, transparent 62%);
+}
+.cabinet.open .burst { animation: burst .9s ease-out; }
+@keyframes burst { 0% { opacity: 0; transform: scale(.2); } 18% { opacity: 1; } 100% { opacity: 0; transform: scale(1.5); } }
+.feet { display: flex; justify-content: space-between; padding-inline: 6px; }
+.feet i { width: 26px; height: 14px; background: var(--wood-deep); border-radius: 0 0 8px 8px; }
+.floor { height: 10px; margin-top: -2px; background: radial-gradient(ellipse at center, rgba(0,0,0,.6), transparent 70%); }
+
+.pull {
+  align-self: center;
+  font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: 0.08em;
+  color: var(--wood-deep); background: linear-gradient(#f1d894, var(--brass));
+  border: 0; border-radius: 4px; padding: 11px 34px; cursor: pointer;
+  box-shadow: 0 3px 0 var(--brass-dim), 0 8px 18px rgba(0,0,0,.4);
+}
+.pull:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--brass-dim); }
+.pull[disabled] { opacity: .55; cursor: default; }
+.hint { text-align: center; color: var(--muted); margin: -8px 0 0; min-height: 1.6em; }
+
+/* ---------- 결과 ---------- */
+.result {
+  background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px;
+  padding: 18px; display: flex; flex-direction: column; gap: 16px;
+}
+.result.in { animation: rise .5s ease-out; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.verdict { display: flex; gap: 14px; align-items: center; }
+.seal {
+  flex: none; width: 58px; height: 58px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--display); font-weight: 700; font-size: 28px; color: var(--wood-deep);
+  background: radial-gradient(circle at 35% 30%, #f6e2a6, var(--brass) 60%, var(--brass-dim));
+  box-shadow: 0 0 0 3px var(--panel), 0 0 0 4px var(--brass-dim);
+}
+.seal.b { filter: saturate(.35) brightness(1.1); }
+.seal.c { filter: saturate(.1) brightness(.8); }
+.verdict h2 { font-family: var(--display); font-size: 21px; margin: 0; line-height: 1.3; }
+.verdict p { margin: 2px 0 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+.items { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.items li {
+  display: grid; grid-template-columns: 4.2em 16px 1fr; gap: 10px; align-items: center;
+  padding: 7px 0; border-top: 1px solid var(--panel-line);
+}
+.items .slot { font-size: 12px; letter-spacing: 0.1em; color: var(--muted); }
+.items .dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(239,230,210,.4); }
+.items .name { min-width: 0; }
+.items .brand { color: var(--muted); font-size: 13px; margin-left: 6px; white-space: nowrap; }
+.axes { display: grid; gap: 10px; margin: 0; }
+.axis { display: grid; grid-template-columns: 2.6em 1fr 2.6em; gap: 4px 10px; align-items: center; }
+.axis dt { font-weight: 600; }
+.axis .bar { height: 6px; background: var(--panel-line); border-radius: 3px; overflow: hidden; }
+.axis .bar i { display: block; height: 100%; background: var(--brass); border-radius: 3px; }
+.axis .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+.axis dd { grid-column: 2 / -1; margin: 0; color: var(--muted); font-size: 13px; }
+.weather { margin: 0; padding: 9px 12px; border-left: 3px solid var(--brass); background: rgba(201,165,93,.08); }
+.note { color: var(--muted); font-size: 12.5px; text-align: center; margin: 0; }
+
+@media (max-width: 460px) {
+  .controls { justify-content: flex-start; }
+  .controls legend { float: none; display: block; line-height: 1.6; margin-bottom: 4px; }
+  .controls fieldset { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wardrobe.rolling, .cabinet.rolling .seam, .cabinet.open .burst { animation: none; }
+  .door { transition-duration: .01s; }
+  .cabinet.open .piece { animation-duration: .01s; animation-delay: 0s; }
+}
+</style>
+
+<main class="wrap">
+  <header>
+    <h1>오늘의 옷장</h1>
+    <p>어디 가는지와 날씨를 고르고 옷장을 열어 보세요.</p>
+  </header>
+
+  <form class="controls" id="controls">
+    <fieldset>
+      <legend>어디로</legend>
+      <span id="tpo-pills"></span>
+    </fieldset>
+    <div class="temp">
+      <label class="label" for="temp">체감기온</label>
+      <input type="range" id="temp" min="-10" max="35" step="1" value="8">
+      <output id="temp-out" for="temp">8℃</output>
+    </div>
+    <label class="check"><input type="checkbox" id="rain"><span>비 와요</span></label>
+    <label class="check"><input type="checkbox" id="sound" checked><span>소리</span></label>
+  </form>
+
+  <div class="stage">
+    <div class="wardrobe" id="wardrobe">
+      <div class="crown"></div>
+      <div class="cabinet" id="cabinet">
+        <div class="interior" id="interior"><div class="rail"></div></div>
+        <div class="burst"></div>
+        <button type="button" class="door left" id="door-l" aria-label="옷장 열기"></button>
+        <button type="button" class="door right" id="door-r" aria-label="옷장 열기"></button>
+        <div class="seam"></div>
+      </div>
+      <div class="feet"><i></i><i></i></div>
+      <div class="floor"></div>
+    </div>
+  </div>
+
+  <button type="button" class="pull" id="pull">옷장 열기</button>
+  <p class="hint" id="hint" aria-live="polite"></p>
+
+  <section class="result" id="result" hidden aria-live="polite"></section>
+  <p class="note">샘플 옷장으로 만든 추천입니다. 옷 그림은 종류와 색을 따라 그린 것입니다.</p>
+</main>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+const SLOT_LABEL = { outer: "아우터", top: "상의", bottom: "하의", shoes: "신발", accessory: "액세서리" };
+const AXIS_LABEL = { color: "색", formality: "격식", fit: "핏", mood: "무드" };
+const FIT_W = { slim: 0.9, regular: 1, relaxed: 1.09, oversized: 1.18 };
+const $ = (id) => document.getElementById(id);
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- 옷 그림 ---------- */
+const LONG = "M45,16 L28,22 L7,98 L21,103 L35,54 L35,124 L85,124 L85,54 L99,103 L113,98 L92,22 L75,16 Q60,26 45,16 Z";
+const SHORT = "M45,16 L27,23 L9,48 L23,59 L35,48 L35,124 L85,124 L85,48 L97,59 L111,48 L93,23 L75,16 Q60,26 45,16 Z";
+const COAT = "M45,14 L28,20 L8,100 L22,105 L34,56 L31,146 L89,146 L86,56 L98,105 L112,100 L92,20 L75,14 Q60,22 45,14 Z";
+const PANTS = "M36,8 L84,8 L90,142 L64,142 L60,52 L56,142 L30,142 Z";
+const SHORTS = "M36,8 L84,8 L91,76 L63,76 L60,48 L57,76 L29,76 Z";
+const LOW = "M8,52 Q8,34 28,32 L50,30 Q60,30 68,38 Q86,46 104,50 Q114,52 114,60 L114,66 L8,66 Z";
+const BOOT = "M14,6 L48,6 L50,36 Q70,44 102,50 Q114,52 114,60 L114,66 L14,66 Z";
+const HOOD = '<path d="M41,19 Q60,-6 79,19 Q60,31 41,19 Z"/>';
+const COLLAR = '<path d="M45,16 L60,31 L51,38 Z"/><path d="M75,16 L60,31 L69,38 Z"/>';
+const dots = (x, ys, r = 1.6) => ys.map((y) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join("");
+const lines = (list) => list.map(([a, b, c, d]) => `<path d="M${a},${b} L${c},${d}"/>`).join("");
+
+function garment(item) {
+  const hex = DATA.colors[item.color.primary].hex;
+  const second = item.color.secondary ? DATA.colors[item.color.secondary].hex : null;
+  const dark = item.color.tone === "dark";
+  const ink = dark ? "rgba(255,255,255,.34)" : "rgba(0,0,0,.34)";
+  const mark = dark ? "#efe6d2" : "#2c190e";
+  const pid = "p-" + item.id;
+  let defs = "", fill = hex;
+  if (item.pattern === "stripe") {
+    defs = `<pattern id="${pid}" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="${hex}"/><rect width="3" height="9" fill="${second || mark}" opacity=".85"/></pattern>`;
+    fill = `url(#${pid})`;
+  } else if (item.pattern === "check") {
+    defs = `<pattern id="${pid}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${hex}"/><rect width="5" height="16" fill="${second || mark}" opacity=".6"/><rect width="16" height="5" fill="${second || mark}" opacity=".6"/></pattern>`;
+    fill = `url(#${pid})`;
+  } else if (item.pattern === "dot") {
+    defs = `<pattern id="${pid}" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="${hex}"/><circle cx="5" cy="5" r="1.6" fill="${second || mark}"/></pattern>`;
+    fill = `url(#${pid})`;
+  }
+  const emblem = item.pattern === "graphic" ? `<circle cx="60" cy="64" r="10" fill="none" stroke="${mark}" stroke-width="3"/><path d="M54,64 L66,64" stroke="${mark}" stroke-width="3"/>` : "";
+  const hanger = `<path d="M60,17 L60,9 Q60,2 67,5" fill="none" stroke="#c9a55d" stroke-width="2.4" stroke-linecap="round"/>`;
+  const body = (d) => `<path d="${d}" fill="${fill}" stroke="rgba(239,230,210,.5)" stroke-width="1.2" stroke-linejoin="round"/>`;
+  const solid = (inner) => `<g fill="${hex}" stroke="rgba(239,230,210,.5)" stroke-width="1.2" stroke-linejoin="round">${inner}</g>`;
+  const detail = (inner) => `<g fill="none" stroke="${ink}" stroke-width="1.5" stroke-linecap="round">${inner}</g>`;
+  const btn = (inner) => `<g fill="${ink}">${inner}</g>`;
+  const c = item.category;
+  let box = "0 0 120 150", art = "", scale = true;
+
+  if (item.slot === "top") {
+    const short = c === "tshirt" || c === "polo";
+    art = (c === "hoodie" ? solid(HOOD) : "") + hanger + body(short ? SHORT : LONG);
+    if (c === "shirt") art += solid(COLLAR) + detail(lines([[60, 31, 60, 124]])) + btn(dots(60, [46, 64, 82, 100, 116]));
+    else if (c === "polo") art += solid(COLLAR) + detail(lines([[60, 31, 60, 58]])) + btn(dots(60, [40, 51]));
+    else if (c === "knit") art += detail('<path d="M45,16 Q60,29 75,16"/><path d="M47,20 Q60,32 73,20"/>' + lines([[35, 116, 85, 116], [42, 116, 42, 124], [51, 116, 51, 124], [60, 116, 60, 124], [69, 116, 69, 124], [78, 116, 78, 124]]));
+    else if (c === "hoodie") art += detail('<path d="M46,96 L74,96 L78,116 L42,116 Z"/>' + lines([[55, 26, 54, 44], [65, 26, 66, 44], [35, 117, 85, 117]]));
+    else art += detail('<path d="M45,16 Q60,29 75,16"/>' + (c === "sweatshirt" ? lines([[35, 117, 85, 117]]) : ""));
+    art += emblem;
+    box = "0 0 120 130";
+  } else if (item.slot === "outer") {
+    if (c === "coat") {
+      art = hanger + body(COAT) + detail(lines([[45, 14, 60, 50], [75, 14, 60, 50], [60, 50, 60, 146], [38, 96, 50, 96], [70, 96, 82, 96]])) + btn(dots(65, [64, 84, 104], 2));
+    } else {
+      art = (c === "shell" ? solid(HOOD) : "") + hanger + body(LONG);
+      if (c === "blazer") art += detail(lines([[45, 16, 60, 74], [75, 16, 60, 74], [60, 74, 60, 124], [70, 60, 80, 60], [38, 100, 50, 100], [70, 100, 82, 100]])) + btn(dots(64, [84, 100], 2));
+      else if (c === "padding") art += solid('<path d="M46,9 L74,9 L75,18 Q60,26 45,18 Z"/>') + detail(lines([[60, 22, 60, 124], [35, 58, 85, 58], [35, 76, 85, 76], [35, 94, 85, 94], [35, 110, 85, 110], [24, 44, 34, 47], [96, 44, 86, 47], [17, 70, 30, 74], [103, 70, 90, 74]]));
+      else if (c === "shell") art += detail(lines([[60, 26, 60, 124], [42, 62, 52, 70], [78, 62, 68, 70]]));
+      else if (c === "cardigan") art += detail(lines([[45, 16, 60, 62], [75, 16, 60, 62], [60, 62, 60, 124], [35, 117, 85, 117]])) + btn(dots(64, [74, 90, 106], 2));
+      else art += solid(COLLAR) + detail(lines([[60, 31, 60, 124]]) + '<rect x="40" y="52" width="13" height="13"/><rect x="67" y="52" width="13" height="13"/>') + btn(dots(64, [44, 62, 80, 98, 114], 1.8));
+      box = "0 0 120 130";
+    }
+  } else if (item.slot === "bottom") {
+    const short = c === "shorts";
+    art = body(short ? SHORTS : PANTS) + detail(lines([[36, 17, 84, 17], [60, 17, 60, 40]]));
+    if (c === "slacks") art += detail(lines([[47, 20, 43, 142], [73, 20, 77, 142]]));
+    else if (c === "denim") art += detail('<path d="M38,18 Q43,31 51,18"/><path d="M69,18 Q77,31 82,18"/>');
+    else if (c === "cargo" || c === "workpants") art += detail('<rect x="32" y="64" width="13" height="20"/><rect x="75" y="64" width="13" height="20"/>');
+    else if (c === "corduroy") art += detail(lines([[41, 20, 37, 142], [47, 20, 44, 142], [53, 20, 51, 142], [67, 20, 69, 142], [73, 20, 76, 142], [79, 20, 83, 142]]));
+    else if (c === "sweatpants") art += detail(lines([[31, 134, 56, 134], [64, 134, 89, 134]]));
+    else if (!short) art += detail(lines([[40, 20, 46, 32], [80, 20, 74, 32]]));
+    box = short ? "0 0 120 84" : "0 0 120 150";
+  } else if (item.slot === "shoes") {
+    scale = false; box = "0 0 122 72";
+    const sole = c === "sneakers" ? "#f1ede2" : "#1a110b";
+    if (c === "sandals") {
+      art = `<path d="M8,58 L114,58 L114,66 L8,66 Z" fill="${sole}" stroke="rgba(239,230,210,.5)" stroke-width="1.2"/>` +
+        `<g fill="none" stroke="${hex}" stroke-width="8" stroke-linecap="round"><path d="M30,56 Q42,26 58,56"/><path d="M64,56 Q78,34 94,56"/></g>` +
+        `<g fill="none" stroke="rgba(239,230,210,.5)" stroke-width="1"><path d="M26,56 Q42,20 62,56"/><path d="M60,56 Q78,28 98,56"/></g>`;
+    } else {
+      const d = c === "boots" ? BOOT : LOW;
+      art = body(d) + `<path d="M${c === "boots" ? 14 : 8},60 L114,60 L114,66 L${c === "boots" ? 14 : 8},66 Z" fill="${sole}" stroke="rgba(239,230,210,.5)" stroke-width="1"/>`;
+      if (c === "sneakers") art += detail(lines([[50, 34, 58, 30], [56, 39, 64, 34], [62, 44, 70, 39]]));
+      else if (c === "derby") art += detail('<path d="M46,31 Q52,44 70,44"/>') + btn(dots(56, [35], 1.5) + dots(62, [39], 1.5));
+      else if (c === "loafer") art += detail(lines([[50, 31, 68, 44], [55, 30, 72, 42]]));
+      else if (c === "boots") art += detail('<path d="M27,10 L31,34 L41,34 L43,10"/>');
+    }
+  } else {
+    scale = false; box = "0 0 120 120";
+    if (c === "muffler") {
+      art = solid('<path d="M37,42 L57,42 L55,106 L35,106 Z"/><path d="M63,42 L83,42 L87,98 L67,98 Z"/><path d="M28,18 L92,18 L92,44 L28,44 Z"/>') +
+        detail(lines([[38, 106, 38, 114], [44, 106, 44, 114], [50, 106, 50, 114], [70, 98, 70, 106], [76, 98, 77, 106], [82, 98, 83, 106], [28, 31, 92, 31]]));
+    } else if (c === "cap") {
+      art = solid('<path d="M24,76 Q24,30 62,30 Q98,30 98,76 Z"/><path d="M96,70 Q114,74 118,88 Q104,82 60,82 L60,76 L98,76 Z"/>') +
+        detail('<path d="M62,30 Q50,50 48,76"/><path d="M62,30 Q76,50 78,76"/>') + btn(dots(62, [29], 3));
+    } else if (item.material === "nylon") {
+      art = `<path d="M28,60 Q60,-14 92,60" fill="none" stroke="${hex}" stroke-width="5"/><path d="M28,60 Q60,-14 92,60" fill="none" stroke="rgba(239,230,210,.4)" stroke-width="1"/>` +
+        solid('<rect x="24" y="54" width="72" height="50" rx="10"/>') + detail(lines([[32, 68, 88, 68]]) + '<rect x="40" y="76" width="40" height="18" rx="3"/>');
+    } else {
+      art = `<path d="M42,52 Q42,16 60,16 Q78,16 78,52" fill="none" stroke="${hex}" stroke-width="5"/><path d="M42,52 Q42,16 60,16 Q78,16 78,52" fill="none" stroke="rgba(239,230,210,.4)" stroke-width="1"/>` +
+        solid('<path d="M26,50 L94,50 L100,110 L20,110 Z"/>') + detail(lines([[27, 60, 93, 60]]));
+    }
+  }
+  const w = scale ? (FIT_W[item.fit] || 1) : 1;
+  const g = w === 1 ? art : `<g transform="translate(60 0) scale(${w} 1) translate(-60 0)">${art}</g>`;
+  return `<svg viewBox="${box}" role="img" aria-label="${item.name}"><defs>${defs}</defs>${g}</svg>`;
+}
+
+/* ---------- 소리 ---------- */
+let audio = null;
+function noise(ctx, dur) {
+  const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(); src.buffer = buf; return src;
+}
+function tap(ctx, t, vol) {
+  const n = noise(ctx, 0.07), f = ctx.createBiquadFilter(), g = ctx.createGain();
+  f.type = "bandpass"; f.frequency.value = 1700; f.Q.value = 0.8;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+  n.connect(f).connect(g).connect(ctx.destination); n.start(t); n.stop(t + 0.07);
+  const o = ctx.createOscillator(), og = ctx.createGain();
+  o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(120, t + 0.05);
+  og.gain.setValueAtTime(vol * 0.7, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+  o.connect(og).connect(ctx.destination); o.start(t); o.stop(t + 0.07);
+}
+function playRoll(dur) {
+  if (!$("sound").checked) return;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    audio.resume();
+    const t0 = audio.currentTime + 0.02;
+    for (let t = 0; t < dur;) {                      // 두구두구: 점점 빨라지고 커짐
+      const k = t / dur;
+      tap(audio, t0 + t, 0.08 + 0.3 * k);
+      t += 0.11 - 0.07 * k;
+    }
+    const t1 = t0 + dur;                            // 빵
+    const n = noise(audio, 1.2), f = audio.createBiquadFilter(), g = audio.createGain();
+    f.type = "highpass"; f.frequency.value = 4500;
+    g.gain.setValueAtTime(0.4, t1); g.gain.exponentialRampToValueAtTime(0.001, t1 + 1.1);
+    n.connect(f).connect(g).connect(audio.destination); n.start(t1); n.stop(t1 + 1.2);
+    const k = audio.createOscillator(), kg = audio.createGain();
+    k.frequency.setValueAtTime(130, t1); k.frequency.exponentialRampToValueAtTime(45, t1 + 0.25);
+    kg.gain.setValueAtTime(0.7, t1); kg.gain.exponentialRampToValueAtTime(0.001, t1 + 0.3);
+    k.connect(kg).connect(audio.destination); k.start(t1); k.stop(t1 + 0.32);
+    [523.25, 659.25, 783.99, 1046.5].forEach((hz) => {
+      const o = audio.createOscillator(), og = audio.createGain();
+      o.type = "triangle"; o.frequency.value = hz;
+      og.gain.setValueAtTime(0.12, t1); og.gain.exponentialRampToValueAtTime(0.001, t1 + 0.9);
+      o.connect(og).connect(audio.destination); o.start(t1); o.stop(t1 + 0.95);
+    });
+  } catch (e) { /* 소리가 막힌 환경에서는 조용히 진행 */ }
+}
+
+/* ---------- 상태 ---------- */
+const state = { tpo: Object.keys(DATA.tpo)[0], index: 0, busy: false, open: false };
+
+function warmthFor(temp) {
+  for (const row of DATA.warmth_by_temp) if (temp >= row.min_temp) return row.warmth;
+  return 5;
+}
+function outfits() {
+  const key = [state.tpo, warmthFor(+$("temp").value), $("rain").checked ? 1 : 0].join("|");
+  return DATA.scenarios[key] || [];
+}
+function grade(total) { return total >= 0.95 ? "S" : total >= 0.91 ? "A" : total >= 0.85 ? "B" : "C"; }
+
+function renderInterior(o) {
+  const it = (slot) => o.items[slot] && DATA.items[o.items[slot]];
+  let i = 0;
+  const piece = (item, cls = "") => `<div class="piece ${cls}" style="--i:${i++}">${garment(item)}</div>`;
+  let html = '<div class="rail"></div>';
+  html += it("outer") ? piece(it("outer")) + piece(it("top")) : piece(it("top"), "wide");
+  html += piece(it("bottom"));
+  html += `<div class="small ${it("accessory") ? "" : "solo"}">` + (it("accessory") ? piece(it("accessory")) : "") + piece(it("shoes")) + "</div>";
+  $("interior").innerHTML = html;
+}
+
+function renderResult(o, list) {
+  const rank = state.index + 1;
+  const g = grade(o.total);
+  const rows = ["outer", "top", "bottom", "shoes", "accessory"].filter((s) => o.items[s]).map((s) => {
+    const item = DATA.items[o.items[s]];
+    const brand = item.brand ? `<span class="brand">${DATA.brands[item.brand]}</span>` : "";
+    return `<li><span class="slot">${SLOT_LABEL[s]}</span><span class="dot" style="background:${DATA.colors[item.color.primary].hex}"></span><span class="name">${item.name}${brand}</span></li>`;
+  }).join("");
+  const axes = Object.keys(AXIS_LABEL).map((a) =>
+    `<div class="axis"><dt>${AXIS_LABEL[a]}</dt><div class="bar"><i style="width:${Math.round(o.scores[a] * 100)}%"></i></div><span class="num">${Math.round(o.scores[a] * 100)}</span><dd>${o.reasons[a]}</dd></div>`).join("");
+  const el = $("result");
+  el.innerHTML =
+    `<div class="verdict"><div class="seal ${g.toLowerCase()}" aria-label="등급 ${g}">${g}</div>` +
+    `<div><h2>${rank}순위 코디</h2><p>밸런스 ${Math.round(o.total * 100)}점 · ${list.length}개 중 ${rank}번째</p></div></div>` +
+    `<p class="weather">날씨 먼저: ${o.reasons.weather}</p>` +
+    `<ul class="items">${rows}</ul><dl class="axes">${axes}</dl>`;
+  el.hidden = false;
+  el.classList.remove("in"); void el.offsetWidth; el.classList.add("in");
+}
+
+function setHint() {
+  const list = outfits();
+  const temp = +$("temp").value;
+  const label = `${DATA.tpo[state.tpo]}, 체감 ${temp}℃${$("rain").checked ? ", 비" : ""}`;
+  $("hint").textContent = list.length ? `${label}에 맞는 코디 ${list.length}개가 옷장 안에 있습니다.` : `${label}에 맞는 코디가 없습니다. 조건을 바꿔 보세요.`;
+  $("pull").disabled = !list.length || state.busy;
+  $("pull").textContent = state.open ? "다시 뽑기" : "옷장 열기";
+}
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function close() {
+  if (!state.open) return;
+  $("cabinet").classList.remove("open");
+  state.open = false;
+  await wait(reduced ? 0 : 700);
+}
+
+async function pull() {
+  const list = outfits();
+  if (state.busy || !list.length) return;
+  state.busy = true; setHint();
+  if (state.open) { state.index = (state.index + 1) % list.length; await close(); }
+  const o = list[state.index];
+  const roll = reduced ? 0 : 1500;
+  $("wardrobe").style.setProperty("--roll", roll + "ms");
+  $("cabinet").style.setProperty("--roll", roll + "ms");
+  renderInterior(o);
+  $("wardrobe").classList.add("rolling"); $("cabinet").classList.add("rolling");
+  playRoll(roll / 1000);
+  await wait(roll);
+  $("wardrobe").classList.remove("rolling"); $("cabinet").classList.remove("rolling");
+  $("cabinet").classList.add("open");
+  state.open = true;
+  await wait(reduced ? 0 : 900);
+  renderResult(o, list);
+  state.busy = false; setHint();
+}
+
+async function reset() {
+  state.index = 0;
+  $("temp-out").textContent = $("temp").value + "℃";
+  $("result").hidden = true;
+  if (!state.busy) await close();
+  setHint();
+}
+
+$("tpo-pills").outerHTML = Object.entries(DATA.tpo).map(([k, label], i) =>
+  `<label class="pill"><input type="radio" name="tpo" id="tpo-${k}" value="${k}"${i ? "" : " checked"}><span>${label}</span></label>`).join("");
+$("controls").addEventListener("input", (e) => {
+  if (e.target.name === "tpo") state.tpo = e.target.value;
+  if (e.target.id === "sound") return;
+  reset();
+});
+$("controls").addEventListener("submit", (e) => e.preventDefault());
+["pull", "door-l", "door-r"].forEach((id) => $(id).addEventListener("click", pull));
+setHint();
+</script>

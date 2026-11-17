@@ -1,10 +1,10 @@
-"""추천 로직: 날씨·TPO로 후보를 거르고, 색·격식·핏·무드·날씨 점수로 순위를 매깁니다."""
+"""추천 로직: 날씨와 TPO로 먼저 거르고, 남은 조합을 색·격식·핏·무드 점수로 순위 매깁니다."""
 from dataclasses import dataclass, field
 from itertools import combinations, product
 
 CORE_SLOTS = ("outer", "top", "bottom", "shoes")
 FIT_WIDTH = {"slim": 0, "regular": 1, "relaxed": 2, "oversized": 3}
-AXIS_LABELS = {"color": "색", "formality": "격식", "fit": "핏", "mood": "무드", "weather": "날씨"}
+AXIS_LABELS = {"color": "색", "formality": "격식", "fit": "핏", "mood": "무드"}
 
 
 @dataclass
@@ -20,6 +20,7 @@ class Outfit:
     scores: dict = field(default_factory=dict)
     reasons: dict = field(default_factory=dict)
     total: float = 0.0
+    weather_gap: int = 0             # 목표 보온도와의 차이. 0이면 날씨에 딱 맞음
 
     @property
     def core(self):
@@ -167,12 +168,11 @@ def score_mood(closet, core):
     return score, f"{name} 무드 중심" if counts[main] >= len(core) - 1 else "무드가 무난하게 섞임"
 
 
-def score_weather(closet, core, temp):
+def weather_fit(closet, core, temp):
+    """날씨는 점수가 아니라 필터입니다. 목표 보온도와의 차이(0이면 딱 맞음)를 돌려줍니다."""
     target = target_warmth(closet, temp)
     by_slot = {it["slot"]: it for it in core}
     upper = max(by_slot[s]["warmth"] for s in ("outer", "top") if s in by_slot)
-    close = lambda w: max(0.0, 1 - abs(w - target) / 2)
-    score = 0.7 * close(upper) + 0.3 * close(by_slot["bottom"]["warmth"])
     if upper < target:
         why = "조금 춥게 느껴질 수 있음"
     elif upper > target:
@@ -181,7 +181,7 @@ def score_weather(closet, core, temp):
         why = "기온에 맞는 두께"
     if by_slot["bottom"]["warmth"] <= target - 2:
         why += ", 하의는 얇은 편"
-    return score, why
+    return abs(upper - target), why
 
 
 def score_outfit(closet, ctx, outfit):
@@ -191,12 +191,13 @@ def score_outfit(closet, ctx, outfit):
         "formality": score_formality(closet, core, ctx.tpo),
         "fit": score_fit(core),
         "mood": score_mood(closet, core),
-        "weather": score_weather(closet, core, ctx.temp),
     }
     weights = closet.scoring["weights"]
     outfit.scores = {k: round(v[0], 3) for k, v in parts.items()}
     outfit.reasons = {k: v[1] for k, v in parts.items()}
-    outfit.total = round(sum(weights[k] * v[0] for k, v in parts.items()) / sum(weights.values()), 4)
+    outfit.total = round(sum(weights[k] * v[0] for k, v in parts.items())
+                         / sum(weights[k] for k in parts), 4)
+    outfit.weather_gap, outfit.reasons["weather"] = weather_fit(closet, core, ctx.temp)
     return outfit
 
 
@@ -224,7 +225,12 @@ def pick_accessory(closet, outfit, accessories):
 # ---------- 4. 순위 ----------
 
 def recommend(closet, ctx, n=3):
-    """상위 n개 코디. 서로 한 벌만 다른 코디는 건너뛰어 다양하게 고릅니다."""
+    """상위 n개 코디.
+
+    날씨가 최우선입니다. 기온에 딱 맞는 조합(weather_gap 0)을 먼저 다 보고,
+    그것만으로 n개가 안 될 때에만 한 단계 덜 맞는 조합으로 넓힙니다.
+    서로 한 벌만 다른 코디는 건너뛰어 다양하게 고릅니다.
+    """
     cands = candidates(closet, ctx)
     outers = outer_options(closet, ctx, cands.get("outer", []))
     outfits = []
@@ -234,7 +240,7 @@ def recommend(closet, ctx, n=3):
         if outer:
             items["outer"] = outer
         outfits.append(score_outfit(closet, ctx, Outfit(items=items)))
-    outfits.sort(key=lambda o: -o.total)
+    outfits.sort(key=lambda o: (o.weather_gap, -o.total))
 
     picked = []
     for o in outfits:

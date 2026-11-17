@@ -9,6 +9,7 @@ python3 -m closet --tpo commute --temp 8
 
 - 데이터 구조: [docs/data-model.md](docs/data-model.md)
 - 추천 로직과 실행 방법: [docs/recommendation.md](docs/recommendation.md)
+- 옷장 페이지 만들기: `python3 scripts/build_page.py --standalone` 후 `web/dist/closet.html` 열기
 - 데이터 검증: `python3 scripts/validate.py`
 - 테스트: `python3 -m unittest discover tests`
 

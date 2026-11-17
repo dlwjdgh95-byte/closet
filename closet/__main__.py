@@ -39,6 +39,7 @@ def main(argv=None):
     elif args.json:
         print(json.dumps([{
             "total": o.total, "scores": o.scores, "reasons": o.reasons,
+            "weather_gap": o.weather_gap,
             "items": {slot: it["id"] for slot, it in o.items.items()},
         } for o in outfits], ensure_ascii=False, indent=2))
     else:
@@ -53,8 +54,9 @@ def main(argv=None):
                 if it:
                     brand = closet.brands.get(it.get("brand"), {}).get("name", "")
                     print(f"   {SLOT_LABELS[slot]:<5} {it['name']}" + (f" ({brand})" if brand else ""))
-            for axis, why in o.reasons.items():
-                print(f"   - {AXIS_LABELS[axis]} {o.scores[axis]:.2f}: {why}")
+            print(f"   - 날씨: {o.reasons['weather']}")
+            for axis, score in o.scores.items():
+                print(f"   - {AXIS_LABELS[axis]} {score:.2f}: {o.reasons[axis]}")
 
 
 if __name__ == "__main__":

@@ -54,11 +54,18 @@ class RecommendTest(unittest.TestCase):
             for temp in (-5, 5, 14, 21, 30):
                 outfits = recommend(self.closet, Context(tpo, temp), n=3)
                 self.assertEqual(len(outfits), 3, (tpo, temp))
-                self.assertEqual(outfits, sorted(outfits, key=lambda o: -o.total))
+                self.assertEqual(outfits, sorted(outfits, key=lambda o: (o.weather_gap, -o.total)))
+                self.assertNotIn("weather", outfits[0].scores)
                 for o in outfits:
                     self.assertTrue(0 <= o.total <= 1)
                     for it in o.items.values():
                         self.assertTrue(lo <= it["formality"] <= hi, (tpo, temp, it["id"]))
+
+    def test_weather_comes_before_balance(self):
+        # 기온에 딱 맞는 조합이 충분하면, 덜 맞는 조합은 점수가 높아도 나오지 않습니다.
+        for temp in (-5, 5, 14, 21, 30):
+            for o in recommend(self.closet, Context("commute", temp), n=5):
+                self.assertEqual(o.weather_gap, 0, temp)
 
     def test_results_differ_by_at_least_two_items(self):
         outfits = recommend(self.closet, Context("commute", 8), n=3)
