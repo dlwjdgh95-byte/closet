@@ -1,10 +1,12 @@
 """추천 페이지 만들기: python3 scripts/build_page.py [출력 경로]
 
 조건(TPO × 목표 보온도 × 비)마다 추천을 미리 계산해 web/template.html에 넣습니다.
-페이지는 서버 없이 열리는 HTML 한 장입니다. 옷장 데이터를 바꾸면 다시 실행합니다.
+페이지는 서버 없이 열리는 HTML 한 장과 그 옆 assets 폴더(옷장 사진과 영상)입니다.
+옷장 데이터를 바꾸면 다시 실행합니다.
 --standalone 을 붙이면 브라우저에서 바로 열 수 있게 문서 틀을 씌웁니다.
 """
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -65,4 +67,5 @@ if __name__ == "__main__":
                 + page + "</body></html>")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(page, encoding="utf-8")
+    shutil.copytree(ROOT / "web" / "assets", out.parent / "assets", dirs_exist_ok=True)
     print(f"{out} ({len(page) // 1024}KB)")

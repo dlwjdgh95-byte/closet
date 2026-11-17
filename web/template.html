@@ -2,173 +2,105 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
-/* 레이아웃: 등불 하나 켜진 방, 벽 앞에 선 호두나무 장롱 한 채. 그 아래 마룻바닥에 조건 한 줄. */
+/* 레이아웃: 화면 가득 실사 옷장 한 장. 문이 열리면 안쪽이 흐려지고 오늘 옷이 앞으로 나온다. 그 아래 조건 한 줄. */
 :root {
   color-scheme: dark;
-  --wall: #1b2622;
-  --wall-motif: #23312c;
-  --floor: #140c07;
-  --wood-hi: #a87242;       /* 빛 받은 호두나무 */
-  --wood-1: #6e4324;
-  --wood-2: #45280f;
-  --wood-3: #1f1008;        /* 홈과 그림자 */
-  --inside: #2a190e;
-  --inside-lit: #74502f;
+  --ground: #0e0a07;        /* 사진 속 마룻바닥 그늘 */
+  --lamp: #ffd596;          /* 옷장 안 조명 */
+  --shade: #0b0705;
+  --wood-3: #1f1008;
   --brass-hi: #f3dc9c;
   --brass: #c9a55d;
   --brass-dim: #7d6331;
   --paper: #efe6d2;
   --tag: #e8dcc0;
+  --tag-lo: #d6c8a6;
   --ink: #2a180c;
   --muted: #a89c84;
   --line: #3a2a1c;
   --display: "Gowun Batang", "Noto Serif KR", Georgia, serif;
   --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
-  /* 세로 나뭇결: 잡음을 가늘고 길게 늘인 무늬 */
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='900'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55 0.006' numOctaves='4' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.10 0 0 0 0 0.04 0 0 0 0 0.01 2.6 0 0 0 -0.95'/%3E%3C/filter%3E%3Crect width='320' height='900' filter='url(%23g)'/%3E%3C/svg%3E");
-  --grain-h: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='320'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.55' numOctaves='4' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 0.10 0 0 0 0 0.04 0 0 0 0 0.01 2.6 0 0 0 -0.95'/%3E%3C/filter%3E%3Crect width='900' height='320' filter='url(%23g)'/%3E%3C/svg%3E");
-  --pw: 22px;               /* 기둥 폭 */
-  --swing: 103deg;          /* 문 열리는 각도 */
 }
 * { box-sizing: border-box; }
 body {
-  background: var(--floor);
+  background: var(--ground);
   color: var(--paper);
   font-family: var(--body);
   font-size: 15px;
   line-height: 1.6;
 }
 
-/* ---------- 방 ---------- */
-.room {
-  position: relative; overflow: hidden;
-  padding-block: 34px 0;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
+/* ---------- 옷장 ---------- */
+.stage {
+  position: relative; overflow: hidden; isolation: isolate;
+  container: stage / size;
+  width: 100%; max-width: 100%;
+  aspect-ratio: 16 / 9; max-height: min(86vh, 860px);
+  background: var(--ground);
+  cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.stage:focus-visible { outline: 2px solid var(--paper); outline-offset: -4px; }
+.shot {
+  position: absolute; inset: 0; width: 100%; height: 100%; max-width: none;
+  object-fit: cover; display: block; pointer-events: none;
+}
+.shot.closed { transition: filter .4s ease; }
+.stage:not(.open):not(.playing):hover .shot.closed { filter: brightness(1.09); }
+.shot.inside, .shot.soft { opacity: 0; transition: opacity .7s ease; }
+.shot.film { opacity: 0; }
+.stage.playing .film { opacity: 1; }
+.stage.playing .inside, .stage.open .inside { opacity: 1; }
+.stage.playing .inside { transition: none; }
+.stage.open .soft { opacity: 1; transition-duration: .9s; }
+.veil {                          /* 가운데는 조명, 가장자리는 어둠 */
+  position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .9s ease;
   background:
-    radial-gradient(ellipse 70% 62% at 50% 34%, rgba(255,205,130,.20), transparent 70%),
-    radial-gradient(circle at 50% 50%, var(--wall-motif) 0 9px, transparent 10px) 0 0 / 68px 68px,
-    radial-gradient(circle at 50% 50%, var(--wall-motif) 0 3px, transparent 4px) 34px 34px / 68px 68px,
-    linear-gradient(90deg, transparent 33px, rgba(0,0,0,.16) 33px 35px, transparent 35px) 0 0 / 68px 68px,
-    var(--wall);
+    radial-gradient(ellipse 62% 70% at 50% 44%, rgba(255,213,150,.16), transparent 72%),
+    radial-gradient(ellipse 95% 95% at 50% 46%, transparent 38%, rgba(11,7,5,.82));
 }
-.room::before {             /* 방 모서리 어둠 */
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(ellipse 85% 80% at 50% 40%, transparent 40%, rgba(0,0,0,.72));
+.stage.open .veil { opacity: 1; }
+.stage::after {                  /* 사진 아랫단을 바닥색으로 잇기 */
+  content: ""; position: absolute; inset: auto 0 0; height: 14%; pointer-events: none; z-index: 2;
+  background: linear-gradient(transparent, var(--ground));
 }
-.room::after {              /* 걸레받이와 마룻바닥 */
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 64px;
-  background:
-    linear-gradient(var(--wood-2), var(--wood-3)) 0 0 / 100% 12px no-repeat,
-    linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.15) 30%, rgba(0,0,0,.6)),
-    repeating-linear-gradient(90deg, transparent 0 118px, rgba(0,0,0,.6) 118px 120px),
-    var(--grain-h) 0 0 / 700px 200px,
-    linear-gradient(#4b2d17, #2a180c);
-  box-shadow: 0 -1px 0 rgba(255,214,160,.10);
+.burst {
+  position: absolute; inset: -20%; z-index: 5; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #fff1c4 0, rgba(255,210,122,.7) 18%, transparent 58%);
 }
-.armoire {
-  position: relative; z-index: 1;
-  width: min(100% - 132px, 452px);
-  margin-inline: auto;
-  padding-bottom: 20px;
-}
-.wood {
-  background:
-    var(--grain) 0 0 / 240px 700px,
-    linear-gradient(100deg, var(--wood-hi) -30%, var(--wood-1) 38%, var(--wood-2) 110%);
+.stage.flash .burst { animation: burst .9s ease-out; }
+.stage.open.rolling .burst { animation: throb var(--roll, .9s) ease-in; }
+@keyframes burst { 0% { opacity: 0; transform: scale(.2); } 16% { opacity: .95; } 100% { opacity: 0; transform: scale(1.4); } }
+@keyframes throb { 0% { opacity: 0; transform: scale(.25); } 100% { opacity: .5; transform: scale(.6); } }
+.stage:not(.open).rolling .closed { animation: rattle var(--roll, 1.4s) linear; }
+@keyframes rattle {
+  0%,100% { transform: scale(1.03); }
+  12% { transform: scale(1.03) translateX(-1px); } 24% { transform: scale(1.03) translateX(1px); }
+  36% { transform: scale(1.03) translateX(-2px); } 48% { transform: scale(1.03) translateX(2px); }
+  60% { transform: scale(1.03) translateX(-3px); } 72% { transform: scale(1.03) translateX(3px); }
+  84% { transform: scale(1.03) translateX(-4px); } 94% { transform: scale(1.03) translateX(4px); }
 }
 
-/* 머리 장식과 처마 */
-.crest {
-  height: 54px; margin-inline: 9%;
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  box-shadow: inset 0 3px 2px rgba(255,214,160,.28), inset 0 -10px 14px rgba(0,0,0,.5), inset 0 0 0 1px var(--wood-3);
-  display: grid; place-items: end center;
+/* 오늘 옷: 넓은 화면은 한 줄, 세로 화면은 두 줄 */
+.outfit {
+  --col: min(20cqw, 37cqh);
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  display: grid; place-content: center; align-items: start;
+  grid-auto-flow: column; grid-auto-columns: var(--col);
+  gap: min(3cqw, 5cqh);
+  padding-bottom: 3cqh;
 }
-.crest svg { width: 46%; max-width: 150px; height: 44px; display: block; }
-.cornice { position: relative; z-index: 4; }
-.cornice i { display: block; }
-.cornice .cap {
-  height: 9px; margin-inline: -15px; border-radius: 2px 2px 0 0;
-  background: linear-gradient(var(--wood-hi), var(--wood-1) 45%, var(--wood-3));
-  box-shadow: 0 2px 3px rgba(0,0,0,.5);
-}
-.cornice .cove {
-  height: 15px; margin-inline: -10px;
-  background: linear-gradient(var(--wood-3), var(--wood-2) 35%, var(--wood-hi) 78%, var(--wood-1));
-}
-.cornice .dentil {
-  height: 9px; margin-inline: -5px;
-  background: repeating-linear-gradient(90deg, var(--wood-1) 0 9px, var(--wood-3) 9px 13px);
-  box-shadow: inset 0 2px 2px rgba(255,214,160,.2), inset 0 -2px 2px rgba(0,0,0,.5);
-}
-.cornice .frieze {
-  height: 20px;
-  box-shadow: inset 0 0 0 1px var(--wood-3), inset 0 5px 0 -3px rgba(255,214,160,.18), inset 0 -6px 8px rgba(0,0,0,.45);
-}
-
-/* 몸통 */
-.carcass { display: flex; position: relative; z-index: 3; }
-.pilaster {
-  flex: none; width: var(--pw); position: relative;
-  background:
-    repeating-linear-gradient(90deg, transparent 0 3px, rgba(0,0,0,.38) 3px 5px, rgba(255,214,160,.16) 5px 6px, transparent 6px 8px) center / calc(100% - 6px) 100% no-repeat,
-    var(--grain) 0 0 / 240px 700px,
-    linear-gradient(90deg, var(--wood-2), var(--wood-1) 45%, var(--wood-2));
-  box-shadow: inset 0 0 0 1px var(--wood-3);
-}
-.pilaster::before, .pilaster::after {
-  content: ""; position: absolute; left: -2px; right: -2px; height: 22px;
-  background: linear-gradient(var(--wood-hi), var(--wood-1) 40%, var(--wood-2));
-  box-shadow: inset 0 0 0 1px var(--wood-3), inset 0 3px 2px rgba(255,214,160,.25), 0 2px 3px rgba(0,0,0,.5);
-}
-.pilaster::before { top: 0; }
-.pilaster::after { bottom: 0; }
-.cabinet {
-  flex: 1 1 0; min-width: 0;
-  position: relative; z-index: 1; aspect-ratio: 5 / 6.9; cursor: pointer;
-  background: var(--wood-3);
-  perspective: 1500px;
-}
-
-/* 옷장 안 */
-.interior {
-  position: absolute; inset: 0; overflow: hidden;
-  background:
-    radial-gradient(ellipse 75% 55% at 50% 16%, rgba(255,214,150,.42), transparent 72%),
-    linear-gradient(transparent 88%, rgba(0,0,0,.5) 88%, rgba(255,214,160,.10) 89%, transparent 89.6%),
-    repeating-linear-gradient(90deg, transparent 0 calc(20% - 2px), rgba(0,0,0,.5) calc(20% - 2px) calc(20% - 1px), rgba(255,214,160,.07) calc(20% - 1px) 20%),
-    var(--grain) 0 0 / 200px 640px,
-    linear-gradient(var(--inside-lit), var(--inside));
-  box-shadow: inset 34px 0 40px -18px #000, inset -34px 0 40px -18px #000, inset 0 46px 46px -30px #000, inset 0 -26px 30px -18px rgba(0,0,0,.8);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1.3fr 1fr;
-  gap: 2% 3%;
-  padding: 6.4% 6% 3.4%;
-}
-.rail {
-  position: absolute; left: 0; right: 0; top: 5.2%; height: 7px; border-radius: 4px;
-  background: linear-gradient(var(--brass-hi), var(--brass) 38%, var(--brass-dim) 80%, #4d3b19);
-  box-shadow: 0 5px 7px rgba(0,0,0,.6);
-}
-.rail::before, .rail::after {
-  content: ""; position: absolute; top: -5px; width: 9px; height: 17px; border-radius: 3px;
-  background: linear-gradient(90deg, var(--brass-dim), var(--brass-hi), var(--brass-dim));
-}
-.rail::before { left: 0; } .rail::after { right: 0; }
 .piece {
-  min-width: 0; min-height: 0; margin: 0; position: relative;
-  display: flex; flex-direction: column; align-items: center; gap: 5px; opacity: 0;
+  min-width: 0; margin: 0; position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0;
 }
-.piece svg { width: 100%; height: auto; flex: 0 1 auto; min-height: 0; overflow: visible; filter: drop-shadow(5px 9px 7px rgba(0,0,0,.55)); }
+.piece svg { width: 100%; height: auto; overflow: visible; filter: drop-shadow(6px 12px 10px rgba(0,0,0,.6)); }
 .piece figcaption {
-  flex: none; max-width: 100%;
+  max-width: 100%;
   font-family: var(--display); font-weight: 700;
-  font-size: clamp(10.5px, 2.7vw, 13px); line-height: 1.3; text-align: center; text-wrap: balance; word-break: keep-all;
-  color: var(--ink); background: linear-gradient(var(--tag), #d6c8a6);
-  padding: 2px 9px 2px 15px; border-radius: 2px; position: relative;
-  box-shadow: 0 2px 4px rgba(0,0,0,.55);
+  font-size: clamp(11px, 1.1cqw + 6px, 16px); line-height: 1.3; text-align: center; text-wrap: balance; word-break: keep-all;
+  color: var(--ink); background: linear-gradient(var(--tag), var(--tag-lo));
+  padding: 2px 10px 2px 16px; border-radius: 2px; position: relative;
+  box-shadow: 0 2px 5px rgba(0,0,0,.6);
   transform: rotate(-1.2deg);
 }
 .piece:nth-child(odd) figcaption { transform: rotate(1deg); }
@@ -177,121 +109,26 @@ body {
   border-radius: 50%; background: var(--wood-3); box-shadow: 0 0 0 1px var(--brass-dim);
 }
 .piece figcaption b { font-weight: 400; }
-.piece.wide { grid-column: 1 / -1; }
-.piece.wide svg { width: 58%; }
-.small { display: grid; grid-template-rows: 1fr 1fr; gap: 5%; min-height: 0; }
-.small.solo { grid-template-rows: 1fr; }
-.small .piece:last-child { justify-content: flex-end; }
+.small { align-self: stretch; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+.small.solo { justify-content: flex-end; }
 .small .piece svg { width: 78%; }
-.cabinet.open .piece { animation: pop .6s cubic-bezier(.2,1.3,.4,1) forwards; animation-delay: calc(.7s + var(--i) * .17s); }
-@keyframes pop { from { opacity: 0; transform: translateY(16px) scale(.88); } to { opacity: 1; transform: none; } }
-
-/* 문 */
-.door {
-  position: absolute; top: 0; bottom: 0; width: 50%; z-index: 5;
-  transform-style: preserve-3d;
-  transition: transform 1.25s cubic-bezier(.35,.05,.2,1);
-  cursor: pointer; border: 0; padding: 0; background: none; color: inherit;
-}
-.door.left { left: 0; transform-origin: left center; }
-.door.right { right: 0; transform-origin: right center; }
-.cabinet.open .door.left { transform: rotateY(calc(-1 * var(--swing))); }
-.cabinet.open .door.right { transform: rotateY(var(--swing)); }
-.face { position: absolute; inset: 0; backface-visibility: hidden; display: block; }
-.face.front {
-  box-shadow: inset 0 0 0 1px var(--wood-3), inset 0 0 0 3px rgba(255,214,160,.07), inset 0 0 40px rgba(0,0,0,.35);
-}
-.face.back {
-  transform: rotateY(180deg);
-  background:
-    var(--grain) 0 0 / 240px 700px,
-    linear-gradient(90deg, #5d3a1f, #7d5330 50%, #4a2d17);
-  box-shadow: inset 0 0 0 1px var(--wood-3), inset 0 0 0 10px rgba(0,0,0,.14), inset 0 0 50px rgba(0,0,0,.5);
-}
-.panel {
-  position: absolute; left: 14%; right: 14%; display: block;
-  background:
-    var(--grain) 40px 0 / 190px 560px,
-    linear-gradient(104deg, var(--wood-hi) -45%, var(--wood-1) 42%, var(--wood-2) 115%);
-  box-shadow:
-    0 0 0 2px var(--wood-3),
-    -1px -1px 0 4px rgba(0,0,0,.30), 1px 1px 0 5px rgba(255,214,160,.13),
-    inset 3px 3px 3px rgba(0,0,0,.6), inset -2px -2px 2px rgba(255,214,160,.16);
-}
-.panel::after {                  /* 돋을새김 면 */
-  content: ""; position: absolute; inset: 9% 11%;
-  border-radius: inherit;
-  box-shadow: inset 2px 2px 1px rgba(255,214,160,.30), inset -2px -2px 3px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.35), 3px 4px 10px rgba(0,0,0,.4);
-  background: linear-gradient(104deg, rgba(255,214,160,.10), transparent 40%, rgba(0,0,0,.18));
-}
-.panel.arch { top: 6%; height: 59%; border-radius: 50% 50% 3px 3px / 19% 19% 3px 3px; }
-.panel.low { bottom: 6%; height: 24%; border-radius: 3px; }
-.pull { position: absolute; top: 44%; width: 15%; max-width: 26px; height: auto; filter: drop-shadow(2px 3px 2px rgba(0,0,0,.6)); }
-.door.left .pull { right: 3%; }
-.door.right .pull { left: 3%; }
-.hinge {
-  position: absolute; width: 7px; height: 26px; border-radius: 3px; display: block;
-  background: linear-gradient(90deg, var(--brass-dim), var(--brass-hi) 45%, var(--brass-dim));
-  box-shadow: 1px 2px 2px rgba(0,0,0,.6);
-}
-.door.left .hinge { left: -3px; } .door.right .hinge { right: -3px; }
-.hinge.a { top: 9%; } .hinge.b { top: 47%; } .hinge.c { bottom: 9%; }
-
-.seam {
-  position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; z-index: 6;
-  background: #ffe9ad; opacity: 0; pointer-events: none; filter: blur(2px);
-}
-.cabinet.rolling .seam { animation: leak var(--roll, 1.5s) ease-in forwards; }
-@keyframes leak { 0% { opacity: 0; } 100% { opacity: 1; box-shadow: 0 0 30px 10px #ffd27a; } }
-.armoire.rolling { animation: rattle var(--roll, 1.5s) linear; }
-@keyframes rattle {
-  0%,100% { transform: none; }
-  10% { transform: translateX(-1px) rotate(-.15deg); } 20% { transform: translateX(1px) rotate(.15deg); }
-  30% { transform: translateX(-2px) rotate(-.3deg); } 40% { transform: translateX(2px) rotate(.3deg); }
-  50% { transform: translateX(-3px) rotate(-.5deg); } 60% { transform: translateX(3px) rotate(.5deg); }
-  70% { transform: translateX(-4px) rotate(-.7deg); } 80% { transform: translateX(4px) rotate(.7deg); }
-  90% { transform: translateX(-5px) rotate(-.9deg); } 95% { transform: translateX(5px) rotate(.9deg); }
-}
-.burst {
-  position: absolute; inset: -25%; z-index: 7; pointer-events: none; opacity: 0;
-  background: radial-gradient(circle, #fff1c4 0, rgba(255,210,122,.7) 20%, transparent 60%);
-}
-.cabinet.open .burst { animation: burst 1s ease-out; }
-@keyframes burst { 0% { opacity: 0; transform: scale(.2); } 16% { opacity: 1; } 100% { opacity: 0; transform: scale(1.5); } }
-
-/* 서랍과 다리 */
-.base {
-  position: relative; z-index: 2; margin-inline: 0; height: 66px; padding: 9px calc(var(--pw) + 4px);
-  box-shadow: inset 0 0 0 1px var(--wood-3), inset 0 4px 5px rgba(0,0,0,.45);
-}
-.drawer {
-  height: 100%; position: relative;
-  background:
-    var(--grain-h) 0 0 / 640px 200px,
-    linear-gradient(var(--wood-hi) -60%, var(--wood-1) 45%, var(--wood-2));
-  box-shadow: 0 0 0 2px var(--wood-3), -1px -1px 0 4px rgba(0,0,0,.3), 1px 1px 0 5px rgba(255,214,160,.12),
-    inset 2px 2px 1px rgba(255,214,160,.28), inset -2px -2px 3px rgba(0,0,0,.55);
-}
-.drawer svg { position: absolute; top: 50%; width: 52px; height: 24px; margin: -11px 0 0 -26px; filter: drop-shadow(1px 3px 2px rgba(0,0,0,.6)); }
-.drawer svg:first-child { left: 24%; } .drawer svg:last-child { left: 76%; }
-.plinth {
-  height: 13px; margin-inline: -9px; position: relative; z-index: 2;
-  background: linear-gradient(var(--wood-hi), var(--wood-1) 35%, var(--wood-3));
-  box-shadow: 0 3px 4px rgba(0,0,0,.6);
-}
-.feet { display: flex; justify-content: space-between; margin-inline: -4px; }
-.feet i { width: 54px; height: 24px; background: linear-gradient(var(--wood-1), var(--wood-2) 50%, var(--wood-3)); box-shadow: inset 0 3px 3px rgba(0,0,0,.5); }
-.feet i:first-child { border-radius: 0 0 70% 12% / 0 0 100% 60%; }
-.feet i:last-child { border-radius: 0 0 12% 70% / 0 0 60% 100%; }
-.shadow {
-  position: absolute; left: -8%; right: -8%; bottom: 4px; height: 30px; z-index: -1;
-  background: radial-gradient(ellipse at center, rgba(0,0,0,.85), transparent 68%);
+.stage.open .piece { animation: pop .6s cubic-bezier(.2,1.3,.4,1) forwards; animation-delay: calc(.12s + var(--i) * .16s); }
+.stage.open .outfit.leaving .piece { animation: leave .25s ease-in forwards; }
+@keyframes pop { from { opacity: 0; transform: translateY(18px) scale(.86); } to { opacity: 1; transform: none; } }
+@keyframes leave { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px) scale(.96); } }
+@container stage (max-aspect-ratio: 1 / 1) {
+  .outfit {
+    --col: min(38cqw, 27cqh);
+    grid-auto-flow: row; grid-template-columns: repeat(2, var(--col));
+    gap: 2.5cqh 6cqw; padding-bottom: 2cqh;
+  }
+  .piece.wide { grid-column: 1 / -1; justify-self: center; width: var(--col); }
 }
 
 /* ---------- 조건 ---------- */
 .controls {
   display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; justify-content: center;
-  padding-block: 20px 40px;
+  padding-block: 18px 36px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
@@ -306,7 +143,7 @@ body {
 .pill input:checked + span {
   background: linear-gradient(var(--brass-hi), var(--brass)); color: var(--ink); border-color: var(--brass); font-weight: 700;
 }
-.pill input:focus-visible + span, .check input:focus-visible + span, input[type=range]:focus-visible, .door:focus-visible {
+.pill input:focus-visible + span, .check input:focus-visible + span, input[type=range]:focus-visible {
   outline: 2px solid var(--paper); outline-offset: 2px;
 }
 .temp { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -314,22 +151,23 @@ body {
 .temp output { font-variant-numeric: tabular-nums; min-width: 3.4em; font-weight: 600; }
 .check span { padding: 5px 12px; border: 1px solid var(--line); border-radius: 3px; cursor: pointer; color: var(--muted); }
 .check input:checked + span { border-color: var(--brass); color: var(--brass); }
-.empty { text-align: center; color: var(--muted); margin: -24px 0 0; padding: 0 16px 32px; }
+.empty {
+  text-align: center; color: var(--muted); margin: -20px 0 0; padding-block: 0 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
 
+@media (max-width: 860px) { .stage { aspect-ratio: 4 / 3; } }
 @media (max-width: 520px) {
-  :root { --pw: 13px; --swing: 94deg; }
-  .armoire { width: calc(100% - 44px); }
-  .crest { height: 40px; } .crest svg { height: 32px; }
-  .base { height: 52px; padding-block: 7px; }
-  .interior { padding-inline: 4%; }
+  .stage { aspect-ratio: 4 / 5; }
   .controls { justify-content: flex-start; }
   .controls legend { float: none; display: block; line-height: 1.6; margin-bottom: 4px; }
   .controls fieldset { flex-wrap: wrap; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .armoire.rolling, .cabinet.rolling .seam, .cabinet.open .burst { animation: none; }
-  .door { transition-duration: .01s; }
-  .cabinet.open .piece { animation-duration: .01s; animation-delay: 0s; }
+  .stage.flash .burst, .stage.rolling .burst, .stage.rolling .closed { animation: none !important; }
+  .shot, .veil { transition-duration: .01s !important; }
+  .stage.open .piece { animation-duration: .01s; animation-delay: 0s; }
 }
 </style>
 
@@ -352,62 +190,18 @@ body {
       <feComposite in="g" in2="SourceAlpha" operator="in" result="t"/>
       <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="t"/></feMerge>
     </filter>
-    <symbol id="pull" viewBox="0 0 26 74">
-      <path d="M13,2 Q22,13 19,25 Q24,37 19,49 Q22,62 13,72 Q4,62 7,49 Q2,37 7,25 Q4,13 13,2 Z" fill="url(#brass)" stroke="#4d3b19" stroke-width="1"/>
-      <circle cx="13" cy="21" r="3" fill="#1f1008"/><path d="M11.4,22 L10.4,31 L15.6,31 L14.6,22 Z" fill="#1f1008"/>
-      <circle cx="13" cy="42" r="3.2" fill="url(#brass)" stroke="#4d3b19" stroke-width=".8"/>
-      <circle cx="13" cy="52" r="8" fill="none" stroke="#4d3b19" stroke-width="4.2"/>
-      <circle cx="13" cy="52" r="8" fill="none" stroke="url(#brass)" stroke-width="2.8"/>
-    </symbol>
-    <symbol id="bail" viewBox="0 0 60 28">
-      <path d="M8,9 Q8,25 30,25 Q52,25 52,9" fill="none" stroke="#4d3b19" stroke-width="4.6" stroke-linecap="round"/>
-      <path d="M8,9 Q8,25 30,25 Q52,25 52,9" fill="none" stroke="url(#brass)" stroke-width="3" stroke-linecap="round"/>
-      <circle cx="8" cy="8" r="6.5" fill="url(#brass)" stroke="#4d3b19" stroke-width="1"/><circle cx="52" cy="8" r="6.5" fill="url(#brass)" stroke="#4d3b19" stroke-width="1"/>
-      <circle cx="8" cy="8" r="2" fill="#6d5527"/><circle cx="52" cy="8" r="2" fill="#6d5527"/>
-    </symbol>
   </defs>
 </svg>
 
-<div class="room">
-  <div class="armoire" id="wardrobe">
-    <div class="crest wood">
-      <svg viewBox="0 0 120 44" aria-hidden="true">
-        <g fill="none" stroke-linecap="round">
-          <g stroke="rgba(0,0,0,.6)" stroke-width="2.2">
-            <path d="M60,42 L60,8"/><path d="M60,42 L44,11"/><path d="M60,42 L76,11"/><path d="M60,42 L31,19"/><path d="M60,42 L89,19"/><path d="M60,42 L22,31"/><path d="M60,42 L98,31"/>
-            <path d="M18,40 Q20,20 38,11 Q50,4 60,5 Q70,4 82,11 Q100,20 102,40"/>
-            <path d="M18,40 Q8,42 4,34 Q4,28 10,29"/><path d="M102,40 Q112,42 116,34 Q116,28 110,29"/>
-          </g>
-          <g stroke="rgba(255,220,170,.38)" stroke-width="1" transform="translate(-1 -1)">
-            <path d="M60,42 L60,8"/><path d="M60,42 L44,11"/><path d="M60,42 L76,11"/><path d="M60,42 L31,19"/><path d="M60,42 L89,19"/><path d="M60,42 L22,31"/><path d="M60,42 L98,31"/>
-            <path d="M18,40 Q20,20 38,11 Q50,4 60,5 Q70,4 82,11 Q100,20 102,40"/>
-          </g>
-        </g>
-      </svg>
-    </div>
-    <div class="cornice"><i class="cap"></i><i class="cove"></i><i class="dentil"></i><i class="frieze wood"></i></div>
-    <div class="carcass">
-      <i class="pilaster"></i>
-      <div class="cabinet" id="cabinet">
-        <div class="interior" id="interior"><div class="rail"></div></div>
-        <div class="burst"></div>
-        <button type="button" class="door left" id="door-l" aria-label="옷장 열기">
-          <span class="face front wood"><i class="panel arch"></i><i class="panel low"></i><i class="hinge a"></i><i class="hinge b"></i><i class="hinge c"></i><svg class="pull" viewBox="0 0 26 74"><use href="#pull"/></svg></span>
-          <span class="face back"></span>
-        </button>
-        <button type="button" class="door right" id="door-r" aria-label="옷장 열기">
-          <span class="face front wood"><i class="panel arch"></i><i class="panel low"></i><i class="hinge a"></i><i class="hinge b"></i><i class="hinge c"></i><svg class="pull" viewBox="0 0 26 74"><use href="#pull"/></svg></span>
-          <span class="face back"></span>
-        </button>
-        <div class="seam"></div>
-      </div>
-      <i class="pilaster"></i>
-    </div>
-    <div class="base wood"><div class="drawer"><svg viewBox="0 0 60 28" aria-hidden="true"><use href="#bail"/></svg><svg viewBox="0 0 60 28" aria-hidden="true"><use href="#bail"/></svg></div></div>
-    <div class="plinth"></div>
-    <div class="feet"><i></i><i></i></div>
-    <div class="shadow"></div>
-  </div>
+<!-- 닫힌 사진 위로 여는 영상이 지나가고, 영상 마지막 장면(inside)에서 멈춘 뒤 흐린 장면(soft)으로 바뀝니다. -->
+<div class="stage" id="stage" role="button" tabindex="0" aria-label="옷장 열기">
+  <img class="shot closed" src="assets/closed.jpg" alt="" draggable="false">
+  <img class="shot inside" src="assets/inside.jpg" alt="" draggable="false">
+  <video class="shot film" id="film" src="assets/opening.mp4" muted playsinline preload="auto" disablepictureinpicture tabindex="-1"></video>
+  <img class="shot soft" src="assets/inside-soft.jpg" alt="" draggable="false">
+  <div class="veil"></div>
+  <div class="outfit" id="interior" aria-live="polite"></div>
+  <div class="burst"></div>
 </div>
 
 <form class="controls" id="controls">
@@ -569,37 +363,48 @@ function tap(ctx, t, vol) {
   og.gain.setValueAtTime(vol * 0.7, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
   o.connect(og).connect(ctx.destination); o.start(t); o.stop(t + 0.07);
 }
-function playRoll(dur) {
-  if (!$("sound").checked) return;
+function sound() {                 // 누른 순간에 불러 두어야 브라우저가 소리를 허락합니다
+  if (!$("sound").checked) return null;
   try {
     audio = audio || new (window.AudioContext || window.webkitAudioContext)();
     audio.resume();
-    const t0 = audio.currentTime + 0.02;
-    for (let t = 0; t < dur;) {                      // 두구두구: 점점 빨라지고 커짐
-      const k = t / dur;
-      tap(audio, t0 + t, 0.08 + 0.3 * k);
-      t += 0.11 - 0.07 * k;
-    }
-    const t1 = t0 + dur;                            // 빵
-    const n = noise(audio, 1.2), f = audio.createBiquadFilter(), g = audio.createGain();
-    f.type = "highpass"; f.frequency.value = 4500;
-    g.gain.setValueAtTime(0.4, t1); g.gain.exponentialRampToValueAtTime(0.001, t1 + 1.1);
-    n.connect(f).connect(g).connect(audio.destination); n.start(t1); n.stop(t1 + 1.2);
-    const k = audio.createOscillator(), kg = audio.createGain();
-    k.frequency.setValueAtTime(130, t1); k.frequency.exponentialRampToValueAtTime(45, t1 + 0.25);
-    kg.gain.setValueAtTime(0.7, t1); kg.gain.exponentialRampToValueAtTime(0.001, t1 + 0.3);
-    k.connect(kg).connect(audio.destination); k.start(t1); k.stop(t1 + 0.32);
-    [523.25, 659.25, 783.99, 1046.5].forEach((hz) => {
-      const o = audio.createOscillator(), og = audio.createGain();
-      o.type = "triangle"; o.frequency.value = hz;
-      og.gain.setValueAtTime(0.12, t1); og.gain.exponentialRampToValueAtTime(0.001, t1 + 0.9);
-      o.connect(og).connect(audio.destination); o.start(t1); o.stop(t1 + 0.95);
-    });
-  } catch (e) { /* 소리가 막힌 환경에서는 조용히 진행 */ }
+    return audio;
+  } catch (e) { return null; }     // 소리가 막힌 환경에서는 조용히 진행
+}
+function roll(dur) {                // 두구두구: 점점 빨라지고 커짐
+  const a = sound();
+  if (!a || dur <= 0) return;
+  const t0 = a.currentTime + 0.02;
+  for (let t = 0; t < dur;) {
+    const k = t / dur;
+    tap(a, t0 + t, 0.08 + 0.3 * k);
+    t += 0.11 - 0.07 * k;
+  }
+}
+function hit() {                    // 빵
+  const a = sound();
+  if (!a) return;
+  const t1 = a.currentTime + 0.01;
+  const n = noise(a, 1.2), f = a.createBiquadFilter(), g = a.createGain();
+  f.type = "highpass"; f.frequency.value = 4500;
+  g.gain.setValueAtTime(0.4, t1); g.gain.exponentialRampToValueAtTime(0.001, t1 + 1.1);
+  n.connect(f).connect(g).connect(a.destination); n.start(t1); n.stop(t1 + 1.2);
+  const k = a.createOscillator(), kg = a.createGain();
+  k.frequency.setValueAtTime(130, t1); k.frequency.exponentialRampToValueAtTime(45, t1 + 0.25);
+  kg.gain.setValueAtTime(0.7, t1); kg.gain.exponentialRampToValueAtTime(0.001, t1 + 0.3);
+  k.connect(kg).connect(a.destination); k.start(t1); k.stop(t1 + 0.32);
+  [523.25, 659.25, 783.99, 1046.5].forEach((hz) => {
+    const o = a.createOscillator(), og = a.createGain();
+    o.type = "triangle"; o.frequency.value = hz;
+    og.gain.setValueAtTime(0.12, t1); og.gain.exponentialRampToValueAtTime(0.001, t1 + 0.9);
+    o.connect(og).connect(a.destination); o.start(t1); o.stop(t1 + 0.95);
+  });
 }
 
 /* ---------- 상태 ---------- */
-const state = { tpo: Object.keys(DATA.tpo)[0], index: 0, busy: false, open: false };
+const stage = $("stage"), film = $("film");
+const state = { tpo: Object.keys(DATA.tpo)[0], index: 0, busy: false, open: false, opened: 0 };
+const FIRST_RATE = 2, AGAIN_RATE = 2.8;   // 10초짜리 영상을 처음엔 5초, 다시 열 땐 더 빠르게
 
 function warmthFor(temp) {
   for (const row of DATA.warmth_by_temp) if (temp >= row.min_temp) return row.warmth;
@@ -610,15 +415,15 @@ function outfits() {
   return DATA.scenarios[key] || [];
 }
 
-function renderInterior(o) {
+function renderOutfit(o) {
   const it = (slot) => o.items[slot] && DATA.items[o.items[slot]];
   let i = 0;
   const caption = (item) => `<b>${KIND[item.category] || item.category}${item.brand ? ":" : ""}</b>` + (item.brand ? " " + DATA.brands[item.brand] : "");
   const piece = (item, cls = "") => `<figure class="piece ${cls}" style="--i:${i++}">${garment(item)}<figcaption>${caption(item)}</figcaption></figure>`;
-  let html = '<div class="rail"></div>';
-  html += it("outer") ? piece(it("outer")) + piece(it("top")) : piece(it("top"), "wide");
+  let html = it("outer") ? piece(it("outer")) + piece(it("top")) : piece(it("top"), "wide");
   html += piece(it("bottom"));
   html += `<div class="small ${it("accessory") ? "" : "solo"}">` + (it("accessory") ? piece(it("accessory")) : "") + piece(it("shoes")) + "</div>";
+  $("interior").classList.remove("leaving");
   $("interior").innerHTML = html;
 }
 
@@ -629,37 +434,81 @@ function sync() {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function close() {
-  if (!state.open) return;
-  $("cabinet").classList.remove("open");
+/* 문 여는 영상. 끝까지 틀었으면 true, 영상을 못 트는 환경이면 false. */
+function playFilm(rate) {
+  return new Promise((resolve) => {
+    if (reduced || film.error || !film.play) return resolve(false);
+    const off = new AbortController();
+    let started = false, guard = 0;
+    const finish = (ok) => { off.abort(); clearTimeout(guard); resolve(ok); };
+    const on = (type, fn) => film.addEventListener(type, fn, { signal: off.signal });
+    on("playing", () => {
+      if (started) return;
+      started = true;
+      film.playbackRate = rate;
+      stage.classList.add("playing");
+      const left = ((film.duration || 10) - film.currentTime) / rate;
+      roll(left);
+      clearTimeout(guard);
+      guard = setTimeout(() => finish(true), left * 1000 + 4000);   // 중간에 멈춰도 옷은 보여 줌
+    });
+    on("ended", () => finish(true));
+    on("error", () => finish(started));
+    guard = setTimeout(() => { film.pause(); finish(false); }, 3000);
+    try { film.currentTime = 0; } catch (e) { /* 아직 불러오는 중 */ }
+    film.playbackRate = rate;
+    const p = film.play();
+    if (p && p.catch) p.catch(() => finish(started));
+  });
+}
+
+async function rollFor(ms) {
+  stage.style.setProperty("--roll", ms + "ms");
+  stage.classList.add("rolling");
+  roll(ms / 1000);
+  await wait(ms);
+  stage.classList.remove("rolling");
+}
+
+function close() {
+  stage.classList.remove("open", "playing", "flash");
+  stage.setAttribute("aria-label", "옷장 열기");
+  $("interior").innerHTML = "";
+  film.pause();
   state.open = false;
-  await wait(reduced ? 0 : 700);
 }
 
 async function pull() {
-  const list = outfits();
-  if (state.busy || !list.length) return;
+  if (state.busy || !outfits().length) return;
   state.busy = true;
-  if (state.open) { state.index = (state.index + 1) % list.length; await close(); }
-  const o = list[state.index];
-  const roll = reduced ? 0 : 1500;
-  $("wardrobe").style.setProperty("--roll", roll + "ms");
-  $("cabinet").style.setProperty("--roll", roll + "ms");
-  renderInterior(o);
-  $("wardrobe").classList.add("rolling"); $("cabinet").classList.add("rolling");
-  playRoll(roll / 1000);
-  await wait(roll);
-  $("wardrobe").classList.remove("rolling"); $("cabinet").classList.remove("rolling");
-  $("cabinet").classList.add("open");
+  sound();
+  if (state.open) {                                   // 열려 있으면 다음 순위 코디로
+    state.index += 1;
+    $("interior").classList.add("leaving");
+    await rollFor(reduced ? 0 : 900);
+  } else {
+    const played = await playFilm(state.opened++ ? AGAIN_RATE : FIRST_RATE);
+    if (!played) await rollFor(reduced ? 0 : 1400);
+  }
+  const list = outfits();                             // 여는 사이 조건이 바뀌었을 수 있음
+  if (!list.length) { close(); state.busy = false; return; }
+  state.index %= list.length;
+  renderOutfit(list[state.index]);
+  stage.classList.add("open");
+  stage.classList.remove("playing", "flash");
+  void stage.offsetWidth;                             // 번쩍임을 처음부터 다시
+  stage.classList.add("flash");
+  stage.setAttribute("aria-label", "다음 코디 보기");
+  hit();
   state.open = true;
-  await wait(reduced ? 0 : 900);
+  await wait(reduced ? 0 : 800);
   state.busy = false;
 }
 
-async function reset() {
+function reset() {
   state.index = 0;
   sync();
-  if (!state.busy) await close();
+  if (!state.busy) close();
 }
 
 $("tpo-pills").outerHTML = Object.entries(DATA.tpo).map(([k, label], i) =>
@@ -670,6 +519,9 @@ $("controls").addEventListener("input", (e) => {
   reset();
 });
 $("controls").addEventListener("submit", (e) => e.preventDefault());
-$("cabinet").addEventListener("click", pull);   // 닫혀 있으면 열고, 열려 있으면 다음 코디
+stage.addEventListener("click", pull);              // 닫혀 있으면 열고, 열려 있으면 다음 코디
+stage.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pull(); }
+});
 sync();
 </script>
