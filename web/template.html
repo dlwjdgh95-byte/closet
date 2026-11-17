@@ -2,220 +2,428 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
-/* 레이아웃: 어두운 방 한가운데 호두나무 옷장 하나. 그 아래 조건 한 줄. 그 밖의 글은 없음. */
+/* 레이아웃: 등불 하나 켜진 방, 벽 앞에 선 호두나무 장롱 한 채. 그 아래 마룻바닥에 조건 한 줄. */
 :root {
   color-scheme: dark;
-  --room: #121a17;          /* 벽지 */
-  --room-line: #18231f;
-  --wood: #5a3620;          /* 호두나무 */
-  --wood-deep: #2c190e;
-  --wood-light: #7a4d2e;
-  --inside: #1a110b;        /* 옷장 안 */
-  --inside-lit: #4a301b;
+  --wall: #1b2622;
+  --wall-motif: #23312c;
+  --floor: #140c07;
+  --wood-hi: #a87242;       /* 빛 받은 호두나무 */
+  --wood-1: #6e4324;
+  --wood-2: #45280f;
+  --wood-3: #1f1008;        /* 홈과 그림자 */
+  --inside: #2a190e;
+  --inside-lit: #74502f;
+  --brass-hi: #f3dc9c;
   --brass: #c9a55d;
-  --brass-dim: #8a6f3a;
-  --paper: #efe6d2;         /* 글자 */
+  --brass-dim: #7d6331;
+  --paper: #efe6d2;
+  --tag: #e8dcc0;
+  --ink: #2a180c;
   --muted: #a89c84;
-  --panel: #1b2420;
-  --panel-line: #2c3832;
+  --line: #3a2a1c;
   --display: "Gowun Batang", "Noto Serif KR", Georgia, serif;
   --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  /* 세로 나뭇결: 잡음을 가늘고 길게 늘인 무늬 */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='900'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55 0.006' numOctaves='4' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.10 0 0 0 0 0.04 0 0 0 0 0.01 2.6 0 0 0 -0.95'/%3E%3C/filter%3E%3Crect width='320' height='900' filter='url(%23g)'/%3E%3C/svg%3E");
+  --grain-h: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='320'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.55' numOctaves='4' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 0.10 0 0 0 0 0.04 0 0 0 0 0.01 2.6 0 0 0 -0.95'/%3E%3C/filter%3E%3Crect width='900' height='320' filter='url(%23g)'/%3E%3C/svg%3E");
+  --pw: 22px;               /* 기둥 폭 */
+  --swing: 103deg;          /* 문 열리는 각도 */
 }
 * { box-sizing: border-box; }
 body {
-  background:
-    repeating-linear-gradient(90deg, transparent 0 46px, var(--room-line) 46px 48px),
-    var(--room);
+  background: var(--floor);
   color: var(--paper);
   font-family: var(--body);
   font-size: 15px;
   line-height: 1.6;
 }
-.wrap {
-  max-width: 680px;
-  margin-inline: auto;
-  padding-block: 28px 56px;
+
+/* ---------- 방 ---------- */
+.room {
+  position: relative; overflow: hidden;
+  padding-block: 34px 0;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  background:
+    radial-gradient(ellipse 70% 62% at 50% 34%, rgba(255,205,130,.20), transparent 70%),
+    radial-gradient(circle at 50% 50%, var(--wall-motif) 0 9px, transparent 10px) 0 0 / 68px 68px,
+    radial-gradient(circle at 50% 50%, var(--wall-motif) 0 3px, transparent 4px) 34px 34px / 68px 68px,
+    linear-gradient(90deg, transparent 33px, rgba(0,0,0,.16) 33px 35px, transparent 35px) 0 0 / 68px 68px,
+    var(--wall);
 }
+.room::before {             /* 방 모서리 어둠 */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 85% 80% at 50% 40%, transparent 40%, rgba(0,0,0,.72));
+}
+.room::after {              /* 걸레받이와 마룻바닥 */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 64px;
+  background:
+    linear-gradient(var(--wood-2), var(--wood-3)) 0 0 / 100% 12px no-repeat,
+    linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.15) 30%, rgba(0,0,0,.6)),
+    repeating-linear-gradient(90deg, transparent 0 118px, rgba(0,0,0,.6) 118px 120px),
+    var(--grain-h) 0 0 / 700px 200px,
+    linear-gradient(#4b2d17, #2a180c);
+  box-shadow: 0 -1px 0 rgba(255,214,160,.10);
+}
+.armoire {
+  position: relative; z-index: 1;
+  width: min(100% - 132px, 452px);
+  margin-inline: auto;
+  padding-bottom: 20px;
+}
+.wood {
+  background:
+    var(--grain) 0 0 / 240px 700px,
+    linear-gradient(100deg, var(--wood-hi) -30%, var(--wood-1) 38%, var(--wood-2) 110%);
+}
+
+/* 머리 장식과 처마 */
+.crest {
+  height: 54px; margin-inline: 9%;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  box-shadow: inset 0 3px 2px rgba(255,214,160,.28), inset 0 -10px 14px rgba(0,0,0,.5), inset 0 0 0 1px var(--wood-3);
+  display: grid; place-items: end center;
+}
+.crest svg { width: 46%; max-width: 150px; height: 44px; display: block; }
+.cornice { position: relative; z-index: 4; }
+.cornice i { display: block; }
+.cornice .cap {
+  height: 9px; margin-inline: -15px; border-radius: 2px 2px 0 0;
+  background: linear-gradient(var(--wood-hi), var(--wood-1) 45%, var(--wood-3));
+  box-shadow: 0 2px 3px rgba(0,0,0,.5);
+}
+.cornice .cove {
+  height: 15px; margin-inline: -10px;
+  background: linear-gradient(var(--wood-3), var(--wood-2) 35%, var(--wood-hi) 78%, var(--wood-1));
+}
+.cornice .dentil {
+  height: 9px; margin-inline: -5px;
+  background: repeating-linear-gradient(90deg, var(--wood-1) 0 9px, var(--wood-3) 9px 13px);
+  box-shadow: inset 0 2px 2px rgba(255,214,160,.2), inset 0 -2px 2px rgba(0,0,0,.5);
+}
+.cornice .frieze {
+  height: 20px;
+  box-shadow: inset 0 0 0 1px var(--wood-3), inset 0 5px 0 -3px rgba(255,214,160,.18), inset 0 -6px 8px rgba(0,0,0,.45);
+}
+
+/* 몸통 */
+.carcass { display: flex; position: relative; z-index: 3; }
+.pilaster {
+  flex: none; width: var(--pw); position: relative;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 3px, rgba(0,0,0,.38) 3px 5px, rgba(255,214,160,.16) 5px 6px, transparent 6px 8px) center / calc(100% - 6px) 100% no-repeat,
+    var(--grain) 0 0 / 240px 700px,
+    linear-gradient(90deg, var(--wood-2), var(--wood-1) 45%, var(--wood-2));
+  box-shadow: inset 0 0 0 1px var(--wood-3);
+}
+.pilaster::before, .pilaster::after {
+  content: ""; position: absolute; left: -2px; right: -2px; height: 22px;
+  background: linear-gradient(var(--wood-hi), var(--wood-1) 40%, var(--wood-2));
+  box-shadow: inset 0 0 0 1px var(--wood-3), inset 0 3px 2px rgba(255,214,160,.25), 0 2px 3px rgba(0,0,0,.5);
+}
+.pilaster::before { top: 0; }
+.pilaster::after { bottom: 0; }
+.cabinet {
+  flex: 1 1 0; min-width: 0;
+  position: relative; z-index: 1; aspect-ratio: 5 / 6.9; cursor: pointer;
+  background: var(--wood-3);
+  perspective: 1500px;
+}
+
+/* 옷장 안 */
+.interior {
+  position: absolute; inset: 0; overflow: hidden;
+  background:
+    radial-gradient(ellipse 75% 55% at 50% 16%, rgba(255,214,150,.42), transparent 72%),
+    linear-gradient(transparent 88%, rgba(0,0,0,.5) 88%, rgba(255,214,160,.10) 89%, transparent 89.6%),
+    repeating-linear-gradient(90deg, transparent 0 calc(20% - 2px), rgba(0,0,0,.5) calc(20% - 2px) calc(20% - 1px), rgba(255,214,160,.07) calc(20% - 1px) 20%),
+    var(--grain) 0 0 / 200px 640px,
+    linear-gradient(var(--inside-lit), var(--inside));
+  box-shadow: inset 34px 0 40px -18px #000, inset -34px 0 40px -18px #000, inset 0 46px 46px -30px #000, inset 0 -26px 30px -18px rgba(0,0,0,.8);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1.3fr 1fr;
+  gap: 2% 3%;
+  padding: 6.4% 6% 3.4%;
+}
+.rail {
+  position: absolute; left: 0; right: 0; top: 5.2%; height: 7px; border-radius: 4px;
+  background: linear-gradient(var(--brass-hi), var(--brass) 38%, var(--brass-dim) 80%, #4d3b19);
+  box-shadow: 0 5px 7px rgba(0,0,0,.6);
+}
+.rail::before, .rail::after {
+  content: ""; position: absolute; top: -5px; width: 9px; height: 17px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--brass-dim), var(--brass-hi), var(--brass-dim));
+}
+.rail::before { left: 0; } .rail::after { right: 0; }
+.piece {
+  min-width: 0; min-height: 0; margin: 0; position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 5px; opacity: 0;
+}
+.piece svg { width: 100%; height: auto; flex: 0 1 auto; min-height: 0; overflow: visible; filter: drop-shadow(5px 9px 7px rgba(0,0,0,.55)); }
+.piece figcaption {
+  flex: none; max-width: 100%;
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(10.5px, 2.7vw, 13px); line-height: 1.3; text-align: center; text-wrap: balance; word-break: keep-all;
+  color: var(--ink); background: linear-gradient(var(--tag), #d6c8a6);
+  padding: 2px 9px 2px 15px; border-radius: 2px; position: relative;
+  box-shadow: 0 2px 4px rgba(0,0,0,.55);
+  transform: rotate(-1.2deg);
+}
+.piece:nth-child(odd) figcaption { transform: rotate(1deg); }
+.piece figcaption::before {      /* 꼬리표 구멍 */
+  content: ""; position: absolute; left: 5px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px;
+  border-radius: 50%; background: var(--wood-3); box-shadow: 0 0 0 1px var(--brass-dim);
+}
+.piece figcaption b { font-weight: 400; }
+.piece.wide { grid-column: 1 / -1; }
+.piece.wide svg { width: 58%; }
+.small { display: grid; grid-template-rows: 1fr 1fr; gap: 5%; min-height: 0; }
+.small.solo { grid-template-rows: 1fr; }
+.small .piece:last-child { justify-content: flex-end; }
+.small .piece svg { width: 78%; }
+.cabinet.open .piece { animation: pop .6s cubic-bezier(.2,1.3,.4,1) forwards; animation-delay: calc(.7s + var(--i) * .17s); }
+@keyframes pop { from { opacity: 0; transform: translateY(16px) scale(.88); } to { opacity: 1; transform: none; } }
+
+/* 문 */
+.door {
+  position: absolute; top: 0; bottom: 0; width: 50%; z-index: 5;
+  transform-style: preserve-3d;
+  transition: transform 1.25s cubic-bezier(.35,.05,.2,1);
+  cursor: pointer; border: 0; padding: 0; background: none; color: inherit;
+}
+.door.left { left: 0; transform-origin: left center; }
+.door.right { right: 0; transform-origin: right center; }
+.cabinet.open .door.left { transform: rotateY(calc(-1 * var(--swing))); }
+.cabinet.open .door.right { transform: rotateY(var(--swing)); }
+.face { position: absolute; inset: 0; backface-visibility: hidden; display: block; }
+.face.front {
+  box-shadow: inset 0 0 0 1px var(--wood-3), inset 0 0 0 3px rgba(255,214,160,.07), inset 0 0 40px rgba(0,0,0,.35);
+}
+.face.back {
+  transform: rotateY(180deg);
+  background:
+    var(--grain) 0 0 / 240px 700px,
+    linear-gradient(90deg, #5d3a1f, #7d5330 50%, #4a2d17);
+  box-shadow: inset 0 0 0 1px var(--wood-3), inset 0 0 0 10px rgba(0,0,0,.14), inset 0 0 50px rgba(0,0,0,.5);
+}
+.panel {
+  position: absolute; left: 14%; right: 14%; display: block;
+  background:
+    var(--grain) 40px 0 / 190px 560px,
+    linear-gradient(104deg, var(--wood-hi) -45%, var(--wood-1) 42%, var(--wood-2) 115%);
+  box-shadow:
+    0 0 0 2px var(--wood-3),
+    -1px -1px 0 4px rgba(0,0,0,.30), 1px 1px 0 5px rgba(255,214,160,.13),
+    inset 3px 3px 3px rgba(0,0,0,.6), inset -2px -2px 2px rgba(255,214,160,.16);
+}
+.panel::after {                  /* 돋을새김 면 */
+  content: ""; position: absolute; inset: 9% 11%;
+  border-radius: inherit;
+  box-shadow: inset 2px 2px 1px rgba(255,214,160,.30), inset -2px -2px 3px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.35), 3px 4px 10px rgba(0,0,0,.4);
+  background: linear-gradient(104deg, rgba(255,214,160,.10), transparent 40%, rgba(0,0,0,.18));
+}
+.panel.arch { top: 6%; height: 59%; border-radius: 50% 50% 3px 3px / 19% 19% 3px 3px; }
+.panel.low { bottom: 6%; height: 24%; border-radius: 3px; }
+.pull { position: absolute; top: 44%; width: 15%; max-width: 26px; height: auto; filter: drop-shadow(2px 3px 2px rgba(0,0,0,.6)); }
+.door.left .pull { right: 3%; }
+.door.right .pull { left: 3%; }
+.hinge {
+  position: absolute; width: 7px; height: 26px; border-radius: 3px; display: block;
+  background: linear-gradient(90deg, var(--brass-dim), var(--brass-hi) 45%, var(--brass-dim));
+  box-shadow: 1px 2px 2px rgba(0,0,0,.6);
+}
+.door.left .hinge { left: -3px; } .door.right .hinge { right: -3px; }
+.hinge.a { top: 9%; } .hinge.b { top: 47%; } .hinge.c { bottom: 9%; }
+
+.seam {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; z-index: 6;
+  background: #ffe9ad; opacity: 0; pointer-events: none; filter: blur(2px);
+}
+.cabinet.rolling .seam { animation: leak var(--roll, 1.5s) ease-in forwards; }
+@keyframes leak { 0% { opacity: 0; } 100% { opacity: 1; box-shadow: 0 0 30px 10px #ffd27a; } }
+.armoire.rolling { animation: rattle var(--roll, 1.5s) linear; }
+@keyframes rattle {
+  0%,100% { transform: none; }
+  10% { transform: translateX(-1px) rotate(-.15deg); } 20% { transform: translateX(1px) rotate(.15deg); }
+  30% { transform: translateX(-2px) rotate(-.3deg); } 40% { transform: translateX(2px) rotate(.3deg); }
+  50% { transform: translateX(-3px) rotate(-.5deg); } 60% { transform: translateX(3px) rotate(.5deg); }
+  70% { transform: translateX(-4px) rotate(-.7deg); } 80% { transform: translateX(4px) rotate(.7deg); }
+  90% { transform: translateX(-5px) rotate(-.9deg); } 95% { transform: translateX(5px) rotate(.9deg); }
+}
+.burst {
+  position: absolute; inset: -25%; z-index: 7; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #fff1c4 0, rgba(255,210,122,.7) 20%, transparent 60%);
+}
+.cabinet.open .burst { animation: burst 1s ease-out; }
+@keyframes burst { 0% { opacity: 0; transform: scale(.2); } 16% { opacity: 1; } 100% { opacity: 0; transform: scale(1.5); } }
+
+/* 서랍과 다리 */
+.base {
+  position: relative; z-index: 2; margin-inline: 0; height: 66px; padding: 9px calc(var(--pw) + 4px);
+  box-shadow: inset 0 0 0 1px var(--wood-3), inset 0 4px 5px rgba(0,0,0,.45);
+}
+.drawer {
+  height: 100%; position: relative;
+  background:
+    var(--grain-h) 0 0 / 640px 200px,
+    linear-gradient(var(--wood-hi) -60%, var(--wood-1) 45%, var(--wood-2));
+  box-shadow: 0 0 0 2px var(--wood-3), -1px -1px 0 4px rgba(0,0,0,.3), 1px 1px 0 5px rgba(255,214,160,.12),
+    inset 2px 2px 1px rgba(255,214,160,.28), inset -2px -2px 3px rgba(0,0,0,.55);
+}
+.drawer svg { position: absolute; top: 50%; width: 52px; height: 24px; margin: -11px 0 0 -26px; filter: drop-shadow(1px 3px 2px rgba(0,0,0,.6)); }
+.drawer svg:first-child { left: 24%; } .drawer svg:last-child { left: 76%; }
+.plinth {
+  height: 13px; margin-inline: -9px; position: relative; z-index: 2;
+  background: linear-gradient(var(--wood-hi), var(--wood-1) 35%, var(--wood-3));
+  box-shadow: 0 3px 4px rgba(0,0,0,.6);
+}
+.feet { display: flex; justify-content: space-between; margin-inline: -4px; }
+.feet i { width: 54px; height: 24px; background: linear-gradient(var(--wood-1), var(--wood-2) 50%, var(--wood-3)); box-shadow: inset 0 3px 3px rgba(0,0,0,.5); }
+.feet i:first-child { border-radius: 0 0 70% 12% / 0 0 100% 60%; }
+.feet i:last-child { border-radius: 0 0 12% 70% / 0 0 60% 100%; }
+.shadow {
+  position: absolute; left: -8%; right: -8%; bottom: 4px; height: 30px; z-index: -1;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,.85), transparent 68%);
+}
+
 /* ---------- 조건 ---------- */
 .controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px 22px;
-  align-items: center;
-  justify-content: center;
+  display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; justify-content: center;
+  padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .controls fieldset { border: 0; padding: 0; margin: 0; display: flex; gap: 6px; min-width: 0; }
-.controls legend, .label {
-  font-size: 12px; letter-spacing: 0.12em; color: var(--muted);
-}
+.controls legend, .label { font-size: 12px; letter-spacing: 0.12em; color: var(--muted); }
 .controls legend { float: left; margin-right: 10px; padding: 0; line-height: 34px; }
-.pill input { position: absolute; opacity: 0; pointer-events: none; }
+.pill input, .check input { position: absolute; opacity: 0; pointer-events: none; }
 .pill span {
   display: block; padding: 5px 13px; border: 1px solid var(--brass-dim); border-radius: 999px;
-  cursor: pointer; color: var(--paper); white-space: nowrap;
+  cursor: pointer; color: var(--paper); white-space: nowrap; font-family: var(--display);
 }
-.pill input:checked + span { background: var(--brass); color: var(--wood-deep); border-color: var(--brass); font-weight: 600; }
-.pill input:focus-visible + span, button:focus-visible, input[type=range]:focus-visible, .check input:focus-visible + span {
+.pill input:checked + span {
+  background: linear-gradient(var(--brass-hi), var(--brass)); color: var(--ink); border-color: var(--brass); font-weight: 700;
+}
+.pill input:focus-visible + span, .check input:focus-visible + span, input[type=range]:focus-visible, .door:focus-visible {
   outline: 2px solid var(--paper); outline-offset: 2px;
 }
 .temp { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .temp input { width: 150px; max-width: 40vw; accent-color: var(--brass); }
-.temp output { font-variant-numeric: tabular-nums; min-width: 4.2em; font-weight: 600; }
-.check { display: inline-flex; }
-.check input { position: absolute; opacity: 0; pointer-events: none; }
-.check span {
-  padding: 5px 12px; border: 1px solid var(--panel-line); border-radius: 4px; cursor: pointer; color: var(--muted);
-}
+.temp output { font-variant-numeric: tabular-nums; min-width: 3.4em; font-weight: 600; }
+.check span { padding: 5px 12px; border: 1px solid var(--line); border-radius: 3px; cursor: pointer; color: var(--muted); }
 .check input:checked + span { border-color: var(--brass); color: var(--brass); }
+.empty { text-align: center; color: var(--muted); margin: -24px 0 0; padding: 0 16px 32px; }
 
-/* ---------- 옷장 ---------- */
-.stage { overflow: hidden; padding: 6px 0 0; }
-.wardrobe { width: min(100%, 440px); margin-inline: auto; position: relative; }
-.crown {
-  height: 46px; margin-inline: -8px;
-  background: linear-gradient(var(--wood-light), var(--wood) 55%, var(--wood-deep));
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  border-bottom: 5px solid var(--wood-deep);
-  position: relative;
-}
-.crown::after {
-  content: ""; position: absolute; left: 50%; top: 13px; width: 18px; height: 18px; margin-left: -9px;
-  border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f1d894, var(--brass) 55%, var(--brass-dim));
-}
-.cabinet {
-  position: relative; aspect-ratio: 5 / 6.6; cursor: pointer;
-  border: 12px solid var(--wood-deep);
-  border-top-width: 8px;
-  background: var(--inside);
-  perspective: 1300px;
-}
-.interior {
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 50% 30%, var(--inside-lit), var(--inside) 75%);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1.25fr 1fr;
-  gap: 3% 3%;
-  padding: 9% 5% 4%;
-}
-.rail {
-  position: absolute; left: 4%; right: 4%; top: 5.5%; height: 5px; border-radius: 3px;
-  background: linear-gradient(#f1d894, var(--brass) 40%, var(--brass-dim));
-}
-.piece { min-width: 0; min-height: 0; margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0; }
-.piece svg { width: 100%; flex: 1 1 0; min-height: 0; overflow: visible; filter: drop-shadow(0 6px 8px rgba(0,0,0,.45)); }
-.piece figcaption { flex: none; font-size: clamp(11px, 2.9vw, 13.5px); line-height: 1.3; text-align: center; color: var(--paper); text-wrap: balance; }
-.piece figcaption b { font-weight: 500; color: var(--muted); }
-.piece.wide { grid-column: 1 / -1; }
-.piece.wide svg { width: 56%; }
-.small { display: grid; grid-template-rows: 1fr 1fr; gap: 4%; min-height: 0; }
-.small.solo { grid-template-rows: 1fr; }
-.cabinet.open .piece { animation: pop .55s cubic-bezier(.2,1.4,.4,1) forwards; animation-delay: calc(.55s + var(--i) * .16s); }
-@keyframes pop { from { opacity: 0; transform: translateY(14px) scale(.86); } to { opacity: 1; transform: none; } }
-
-.door {
-  position: absolute; top: 0; bottom: 0; width: 50%;
-  background:
-    repeating-linear-gradient(92deg, rgba(0,0,0,.10) 0 2px, transparent 2px 9px),
-    linear-gradient(100deg, var(--wood-light), var(--wood) 45%, var(--wood-deep));
-  transition: transform 1s cubic-bezier(.3,.1,.2,1);
-  backface-visibility: hidden;
-  cursor: pointer;
-  border: 0; padding: 0;
-}
-.door.left { left: 0; transform-origin: left center; box-shadow: inset -2px 0 0 var(--wood-deep); }
-.door.right { right: 0; transform-origin: right center; box-shadow: inset 2px 0 0 var(--wood-deep); }
-.door::before {
-  content: ""; position: absolute; inset: 7% 12%;
-  border: 3px solid var(--wood-deep);
-  border-radius: 45% 45% 3px 3px / 16% 16% 3px 3px;
-  box-shadow: inset 0 0 0 5px rgba(122,77,46,.55), inset 0 0 26px rgba(0,0,0,.35);
-}
-.door::after {
-  content: ""; position: absolute; top: 50%; width: 12px; height: 34px; margin-top: -17px; border-radius: 6px;
-  background: linear-gradient(90deg, #f1d894, var(--brass) 45%, var(--brass-dim));
-  box-shadow: 0 2px 4px rgba(0,0,0,.5);
-}
-.door.left::after { right: 9px; }
-.door.right::after { left: 9px; }
-.cabinet.open .door.left { transform: rotateY(-112deg); }
-.cabinet.open .door.right { transform: rotateY(112deg); }
-
-.seam {
-  position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px; z-index: 2;
-  background: #ffe9ad; opacity: 0; pointer-events: none; filter: blur(3px);
-}
-.cabinet.rolling .seam { animation: leak var(--roll, 1.5s) ease-in forwards; }
-@keyframes leak { 0% { opacity: 0; } 100% { opacity: 1; box-shadow: 0 0 34px 12px #ffdc85; } }
-.wardrobe.rolling { animation: rattle var(--roll, 1.5s) linear; }
-@keyframes rattle {
-  0%,100% { transform: none; }
-  10% { transform: translateX(-1px) rotate(-.2deg); } 20% { transform: translateX(1px) rotate(.2deg); }
-  30% { transform: translateX(-2px) rotate(-.4deg); } 40% { transform: translateX(2px) rotate(.4deg); }
-  50% { transform: translateX(-3px) rotate(-.6deg); } 60% { transform: translateX(3px) rotate(.6deg); }
-  70% { transform: translateX(-4px) rotate(-.9deg); } 80% { transform: translateX(4px) rotate(.9deg); }
-  90% { transform: translateX(-5px) rotate(-1.1deg); } 95% { transform: translateX(5px) rotate(1.1deg); }
-}
-.burst {
-  position: absolute; inset: -30%; z-index: 3; pointer-events: none; opacity: 0;
-  background: radial-gradient(circle, #fff3c9 0, rgba(255,220,133,.75) 22%, transparent 62%);
-}
-.cabinet.open .burst { animation: burst .9s ease-out; }
-@keyframes burst { 0% { opacity: 0; transform: scale(.2); } 18% { opacity: 1; } 100% { opacity: 0; transform: scale(1.5); } }
-.feet { display: flex; justify-content: space-between; padding-inline: 6px; }
-.feet i { width: 26px; height: 14px; background: var(--wood-deep); border-radius: 0 0 8px 8px; }
-.floor { height: 10px; margin-top: -2px; background: radial-gradient(ellipse at center, rgba(0,0,0,.6), transparent 70%); }
-
-.empty { text-align: center; color: var(--muted); margin: 0; }
-
-@media (max-width: 460px) {
+@media (max-width: 520px) {
+  :root { --pw: 13px; --swing: 94deg; }
+  .armoire { width: calc(100% - 44px); }
+  .crest { height: 40px; } .crest svg { height: 32px; }
+  .base { height: 52px; padding-block: 7px; }
+  .interior { padding-inline: 4%; }
   .controls { justify-content: flex-start; }
   .controls legend { float: none; display: block; line-height: 1.6; margin-bottom: 4px; }
   .controls fieldset { flex-wrap: wrap; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .wardrobe.rolling, .cabinet.rolling .seam, .cabinet.open .burst { animation: none; }
+  .armoire.rolling, .cabinet.rolling .seam, .cabinet.open .burst { animation: none; }
   .door { transition-duration: .01s; }
   .cabinet.open .piece { animation-duration: .01s; animation-delay: 0s; }
 }
 </style>
 
-<main class="wrap">
-  <div class="stage">
-    <div class="wardrobe" id="wardrobe">
-      <div class="crown"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6e2a6"/><stop offset=".45" stop-color="#c9a55d"/><stop offset="1" stop-color="#6d5527"/>
+    </linearGradient>
+    <linearGradient id="vol" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#000" stop-opacity=".42"/><stop offset=".2" stop-color="#000" stop-opacity=".06"/>
+      <stop offset=".42" stop-color="#fff" stop-opacity=".13"/><stop offset=".62" stop-color="#000" stop-opacity=".04"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".46"/>
+    </linearGradient>
+    <linearGradient id="fall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".10"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".30"/>
+    </linearGradient>
+    <filter id="weave" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1 0.7" numOctaves="2" seed="3" result="n"/>
+      <feColorMatrix in="n" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 -0.17" result="g"/>
+      <feComposite in="g" in2="SourceAlpha" operator="in" result="t"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="t"/></feMerge>
+    </filter>
+    <symbol id="pull" viewBox="0 0 26 74">
+      <path d="M13,2 Q22,13 19,25 Q24,37 19,49 Q22,62 13,72 Q4,62 7,49 Q2,37 7,25 Q4,13 13,2 Z" fill="url(#brass)" stroke="#4d3b19" stroke-width="1"/>
+      <circle cx="13" cy="21" r="3" fill="#1f1008"/><path d="M11.4,22 L10.4,31 L15.6,31 L14.6,22 Z" fill="#1f1008"/>
+      <circle cx="13" cy="42" r="3.2" fill="url(#brass)" stroke="#4d3b19" stroke-width=".8"/>
+      <circle cx="13" cy="52" r="8" fill="none" stroke="#4d3b19" stroke-width="4.2"/>
+      <circle cx="13" cy="52" r="8" fill="none" stroke="url(#brass)" stroke-width="2.8"/>
+    </symbol>
+    <symbol id="bail" viewBox="0 0 60 28">
+      <path d="M8,9 Q8,25 30,25 Q52,25 52,9" fill="none" stroke="#4d3b19" stroke-width="4.6" stroke-linecap="round"/>
+      <path d="M8,9 Q8,25 30,25 Q52,25 52,9" fill="none" stroke="url(#brass)" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="8" cy="8" r="6.5" fill="url(#brass)" stroke="#4d3b19" stroke-width="1"/><circle cx="52" cy="8" r="6.5" fill="url(#brass)" stroke="#4d3b19" stroke-width="1"/>
+      <circle cx="8" cy="8" r="2" fill="#6d5527"/><circle cx="52" cy="8" r="2" fill="#6d5527"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="room">
+  <div class="armoire" id="wardrobe">
+    <div class="crest wood">
+      <svg viewBox="0 0 120 44" aria-hidden="true">
+        <g fill="none" stroke-linecap="round">
+          <g stroke="rgba(0,0,0,.6)" stroke-width="2.2">
+            <path d="M60,42 L60,8"/><path d="M60,42 L44,11"/><path d="M60,42 L76,11"/><path d="M60,42 L31,19"/><path d="M60,42 L89,19"/><path d="M60,42 L22,31"/><path d="M60,42 L98,31"/>
+            <path d="M18,40 Q20,20 38,11 Q50,4 60,5 Q70,4 82,11 Q100,20 102,40"/>
+            <path d="M18,40 Q8,42 4,34 Q4,28 10,29"/><path d="M102,40 Q112,42 116,34 Q116,28 110,29"/>
+          </g>
+          <g stroke="rgba(255,220,170,.38)" stroke-width="1" transform="translate(-1 -1)">
+            <path d="M60,42 L60,8"/><path d="M60,42 L44,11"/><path d="M60,42 L76,11"/><path d="M60,42 L31,19"/><path d="M60,42 L89,19"/><path d="M60,42 L22,31"/><path d="M60,42 L98,31"/>
+            <path d="M18,40 Q20,20 38,11 Q50,4 60,5 Q70,4 82,11 Q100,20 102,40"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="cornice"><i class="cap"></i><i class="cove"></i><i class="dentil"></i><i class="frieze wood"></i></div>
+    <div class="carcass">
+      <i class="pilaster"></i>
       <div class="cabinet" id="cabinet">
         <div class="interior" id="interior"><div class="rail"></div></div>
         <div class="burst"></div>
-        <button type="button" class="door left" id="door-l" aria-label="옷장 열기"></button>
-        <button type="button" class="door right" id="door-r" aria-label="옷장 열기"></button>
+        <button type="button" class="door left" id="door-l" aria-label="옷장 열기">
+          <span class="face front wood"><i class="panel arch"></i><i class="panel low"></i><i class="hinge a"></i><i class="hinge b"></i><i class="hinge c"></i><svg class="pull" viewBox="0 0 26 74"><use href="#pull"/></svg></span>
+          <span class="face back"></span>
+        </button>
+        <button type="button" class="door right" id="door-r" aria-label="옷장 열기">
+          <span class="face front wood"><i class="panel arch"></i><i class="panel low"></i><i class="hinge a"></i><i class="hinge b"></i><i class="hinge c"></i><svg class="pull" viewBox="0 0 26 74"><use href="#pull"/></svg></span>
+          <span class="face back"></span>
+        </button>
         <div class="seam"></div>
       </div>
-      <div class="feet"><i></i><i></i></div>
-      <div class="floor"></div>
+      <i class="pilaster"></i>
     </div>
+    <div class="base wood"><div class="drawer"><svg viewBox="0 0 60 28" aria-hidden="true"><use href="#bail"/></svg><svg viewBox="0 0 60 28" aria-hidden="true"><use href="#bail"/></svg></div></div>
+    <div class="plinth"></div>
+    <div class="feet"><i></i><i></i></div>
+    <div class="shadow"></div>
   </div>
+</div>
 
-  <form class="controls" id="controls">
-    <fieldset>
-      <legend>어디로</legend>
-      <span id="tpo-pills"></span>
-    </fieldset>
-    <div class="temp">
-      <label class="label" for="temp">체감기온</label>
-      <input type="range" id="temp" min="-10" max="35" step="1" value="8">
-      <output id="temp-out" for="temp">8℃</output>
-    </div>
-    <label class="check"><input type="checkbox" id="rain"><span>비</span></label>
-    <label class="check"><input type="checkbox" id="sound" checked><span>소리</span></label>
-  </form>
-  <p class="empty" id="empty" hidden>이 조건에 맞는 옷이 없습니다.</p>
-</main>
+<form class="controls" id="controls">
+  <fieldset>
+    <legend>어디로</legend>
+    <span id="tpo-pills"></span>
+  </fieldset>
+  <div class="temp">
+    <label class="label" for="temp">체감기온</label>
+    <input type="range" id="temp" min="-10" max="35" step="1" value="8">
+    <output id="temp-out" for="temp">8℃</output>
+  </div>
+  <label class="check"><input type="checkbox" id="rain"><span>비</span></label>
+  <label class="check"><input type="checkbox" id="sound" checked><span>소리</span></label>
+</form>
+<p class="empty" id="empty" hidden>이 조건에 맞는 옷이 없습니다.</p>
 
 <script>
 const DATA = /*__DATA__*/null;
@@ -263,9 +471,12 @@ function garment(item) {
     fill = `url(#${pid})`;
   }
   const emblem = item.pattern === "graphic" ? `<circle cx="60" cy="64" r="10" fill="none" stroke="${mark}" stroke-width="3"/><path d="M54,64 L66,64" stroke="${mark}" stroke-width="3"/>` : "";
-  const hanger = `<path d="M60,17 L60,9 Q60,2 67,5" fill="none" stroke="#c9a55d" stroke-width="2.4" stroke-linecap="round"/>`;
-  const body = (d) => `<path d="${d}" fill="${fill}" stroke="rgba(239,230,210,.5)" stroke-width="1.2" stroke-linejoin="round"/>`;
-  const solid = (inner) => `<g fill="${hex}" stroke="rgba(239,230,210,.5)" stroke-width="1.2" stroke-linejoin="round">${inner}</g>`;
+  const hook = (y) => `<path d="M60,${y} L60,${y - 9} Q60,${y - 17} 67.5,${y - 13.5}" fill="none" stroke="#3d2f14" stroke-width="3.4" stroke-linecap="round"/><path d="M60,${y} L60,${y - 9} Q60,${y - 17} 67.5,${y - 13.5}" fill="none" stroke="url(#brass)" stroke-width="2.2" stroke-linecap="round"/>`;
+  const hanger = `<path d="M33,27 Q60,9 87,27" fill="none" stroke="#3a2412" stroke-width="6" stroke-linecap="round"/><path d="M33,26 Q60,8 87,26" fill="none" stroke="#b9895a" stroke-width="3.6" stroke-linecap="round"/>` + hook(17);
+  const clip = `<path d="M36,7 L84,7" stroke="#3d2f14" stroke-width="5" stroke-linecap="round"/><path d="M36,6.5 L84,6.5" stroke="url(#brass)" stroke-width="3" stroke-linecap="round"/>` + hook(6);
+  const rim = 'stroke="rgba(255,236,200,.26)" stroke-width="1" stroke-linejoin="round"';
+  const body = (d, shade = "vol") => `<path d="${d}" fill="${fill}" ${rim} filter="url(#weave)"/><path d="${d}" fill="url(#${shade})"/><path d="${d}" fill="url(#fall)"/>`;
+  const solid = (inner) => `<g fill="${hex}" ${rim} filter="url(#weave)">${inner}</g><g fill="url(#fall)">${inner}</g>`;
   const detail = (inner) => `<g fill="none" stroke="${ink}" stroke-width="1.5" stroke-linecap="round">${inner}</g>`;
   const btn = (inner) => `<g fill="${ink}">${inner}</g>`;
   const c = item.category;
@@ -295,14 +506,14 @@ function garment(item) {
     }
   } else if (item.slot === "bottom") {
     const short = c === "shorts";
-    art = body(short ? SHORTS : PANTS) + detail(lines([[36, 17, 84, 17], [60, 17, 60, 40]]));
+    art = clip + body(short ? SHORTS : PANTS) + detail(lines([[36, 17, 84, 17], [60, 17, 60, 40]]));
     if (c === "slacks") art += detail(lines([[47, 20, 43, 142], [73, 20, 77, 142]]));
     else if (c === "denim") art += detail('<path d="M38,18 Q43,31 51,18"/><path d="M69,18 Q77,31 82,18"/>');
     else if (c === "cargo" || c === "workpants") art += detail('<rect x="32" y="64" width="13" height="20"/><rect x="75" y="64" width="13" height="20"/>');
     else if (c === "corduroy") art += detail(lines([[41, 20, 37, 142], [47, 20, 44, 142], [53, 20, 51, 142], [67, 20, 69, 142], [73, 20, 76, 142], [79, 20, 83, 142]]));
     else if (c === "sweatpants") art += detail(lines([[31, 134, 56, 134], [64, 134, 89, 134]]));
     else if (!short) art += detail(lines([[40, 20, 46, 32], [80, 20, 74, 32]]));
-    box = short ? "0 0 120 84" : "0 0 120 150";
+    box = short ? "0 -14 120 98" : "0 -14 120 164";
   } else if (item.slot === "shoes") {
     scale = false; box = "0 0 122 72";
     const sole = c === "sneakers" ? "#f1ede2" : "#1a110b";
@@ -312,7 +523,7 @@ function garment(item) {
         `<g fill="none" stroke="rgba(239,230,210,.5)" stroke-width="1"><path d="M26,56 Q42,20 62,56"/><path d="M60,56 Q78,28 98,56"/></g>`;
     } else {
       const d = c === "boots" ? BOOT : LOW;
-      art = body(d) + `<path d="M${c === "boots" ? 14 : 8},60 L114,60 L114,66 L${c === "boots" ? 14 : 8},66 Z" fill="${sole}" stroke="rgba(239,230,210,.5)" stroke-width="1"/>`;
+      art = body(d, "fall") + `<path d="M${c === "boots" ? 14 : 8},60 L114,60 L114,66 L${c === "boots" ? 14 : 8},66 Z" fill="${sole}" stroke="rgba(239,230,210,.5)" stroke-width="1"/>`;
       if (c === "sneakers") art += detail(lines([[50, 34, 58, 30], [56, 39, 64, 34], [62, 44, 70, 39]]));
       else if (c === "derby") art += detail('<path d="M46,31 Q52,44 70,44"/>') + btn(dots(56, [35], 1.5) + dots(62, [39], 1.5));
       else if (c === "loafer") art += detail(lines([[50, 31, 68, 44], [55, 30, 72, 42]]));
@@ -336,7 +547,8 @@ function garment(item) {
   }
   const w = scale ? (FIT_W[item.fit] || 1) : 1;
   const g = w === 1 ? art : `<g transform="translate(60 0) scale(${w} 1) translate(-60 0)">${art}</g>`;
-  return `<svg viewBox="${box}" role="img" aria-label="${item.name}"><defs>${defs}</defs>${g}</svg>`;
+  const hung = item.slot === "top" || item.slot === "outer" || item.slot === "bottom";
+  return `<svg viewBox="${box}" preserveAspectRatio="xMid${hung ? "YMin" : "YMax"} meet" role="img" aria-label="${item.name}"><defs>${defs}</defs>${g}</svg>`;
 }
 
 /* ---------- 소리 ---------- */
