@@ -1,0 +1,18 @@
+# TPO는 옷에 태그하지 않고 허용 격식 범위로 표현합니다.
+# 격식: 1 홈웨어·추리닝 / 2 편한 캐주얼 / 3 단정한 캐주얼 / 4 비즈니스 캐주얼 / 5 정장
+# 코디의 모든 옷이 범위 안에 들어야 후보가 됩니다.
+# target: 범위 안에서 가장 이상적인 평균 격식 (점수에 반영)
+
+tpo:
+  commute:
+    label: 출퇴근
+    formality: [2, 4]   # 복장 자유, 추리닝(1)만 제외
+    target: 3
+  social:
+    label: 친목모임
+    formality: [2, 3]
+    target: 2.5
+  date:
+    label: 데이트
+    formality: [3, 4]
+    target: 3.5

@@ -1,0 +1,37 @@
+# 추천 점수 설정. 써 보면서 조정하는 값들입니다.
+
+# 날씨는 점수가 아니라 최우선 필터입니다(아래 warmth_* 규칙).
+# 날씨를 통과한 조합끼리만 아래 가중치로 밸런스 점수를 매깁니다.
+# 합이 1이 아니어도 자동으로 정규화합니다.
+weights:
+  color: 0.35
+  formality: 0.30
+  fit: 0.20
+  mood: 0.15
+
+# 체감기온(℃) → 목표 보온도. 위에서부터 처음 맞는 줄을 씁니다.
+warmth_by_temp:
+  - { min_temp: 25, warmth: 1 }
+  - { min_temp: 18, warmth: 2 }
+  - { min_temp: 10, warmth: 3 }
+  - { min_temp: 3,  warmth: 4 }
+  - { min_temp: -99, warmth: 5 }
+
+# 슬롯별 허용 보온도 = 목표 + [아래, 위]
+warmth_tolerance:
+  outer: [-1, 1]
+  top: [-2, 1]
+  bottom: [-2, 1]
+  shoes: [-2, 1]
+  accessory: [-1, 1]   # warmth가 있는 액세서리(머플러 등)만 해당
+
+# 아우터: 목표 보온도가 이 값 이상이면 필수, 이 값 이하면 입지 않음
+outer:
+  required_from: 4
+  none_until: 1
+
+# 비 오는 날 피하는 소재
+rain_avoid_materials: [suede]
+
+# 강수확률이 이 값(%) 이상이면 비 오는 날로 봄
+rain_probability: 50

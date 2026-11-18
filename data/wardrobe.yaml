@@ -1,0 +1,621 @@
+# 샘플 옷장. 실제 브랜드를 바탕으로 한 가상의 옷이며, 사진 입력으로 실제 옷을 채우면 교체합니다.
+# 필드 설명은 docs/data-model.md를 참고하십시오.
+
+items:
+  - id: outer-001
+    name: 네이비 울 코트
+    slot: outer
+    category: coat
+    brand: cos
+    color: { primary: navy, tone: dark }
+    formality: 4
+    fit: regular
+    warmth: 5
+    pattern: solid
+    material: wool
+
+  - id: outer-002
+    name: 블랙 숏패딩
+    slot: outer
+    category: padding
+    brand: nike
+    color: { primary: black, tone: dark }
+    formality: 2
+    fit: oversized
+    warmth: 5
+    pattern: solid
+    material: nylon
+
+  - id: outer-003
+    name: 라이트블루 데님 트러커
+    slot: outer
+    category: jacket
+    brand: levis
+    color: { primary: skyblue, tone: light }
+    formality: 2
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: denim
+
+  - id: outer-004
+    name: 카멜 발마칸 코트
+    slot: outer
+    category: coat
+    brand: lemaire
+    color: { primary: brown, tone: medium }
+    formality: 4
+    fit: relaxed
+    warmth: 4
+    pattern: solid
+    material: wool
+
+  - id: outer-005
+    name: 네이비 블레이저
+    slot: outer
+    category: blazer
+    brand: polo_ralph_lauren
+    color: { primary: navy, tone: dark }
+    formality: 4
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: wool
+
+  - id: outer-006
+    name: 브라운 초어 재킷
+    slot: outer
+    category: jacket
+    brand: carhartt_wip
+    color: { primary: brown, tone: medium }
+    formality: 2
+    fit: relaxed
+    warmth: 3
+    pattern: solid
+    material: cotton
+
+  - id: outer-007
+    name: 블랙 고어텍스 쉘
+    slot: outer
+    category: shell
+    brand: arcteryx
+    color: { primary: black, tone: dark }
+    formality: 2
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: nylon
+
+  - id: outer-008
+    name: 그레이 울 가디건
+    slot: outer
+    category: cardigan
+    brand: uniqlo
+    color: { primary: gray, tone: medium }
+    formality: 3
+    fit: regular
+    warmth: 2
+    pattern: solid
+    material: wool
+
+  - id: outer-009
+    name: 올리브 퀼팅 재킷
+    slot: outer
+    category: jacket
+    brand: beams_plus
+    color: { primary: olive, tone: medium }
+    formality: 3
+    fit: regular
+    warmth: 4
+    pattern: solid
+    material: nylon
+
+  - id: outer-010
+    name: 차콜 구스다운 파카
+    slot: outer
+    category: padding
+    brand: arcteryx
+    color: { primary: charcoal, tone: dark }
+    formality: 3
+    fit: regular
+    warmth: 5
+    pattern: solid
+    material: nylon
+
+  - id: top-001
+    name: 화이트 옥스퍼드 셔츠
+    slot: top
+    category: shirt
+    brand: polo_ralph_lauren
+    color: { primary: white, tone: light }
+    formality: 4
+    fit: regular
+    warmth: 2
+    pattern: solid
+    material: cotton
+
+  - id: top-002
+    name: 그레이 크루넥 니트
+    slot: top
+    category: knit
+    brand: uniqlo
+    color: { primary: gray, tone: medium }
+    formality: 3
+    fit: regular
+    warmth: 4
+    pattern: solid
+    material: wool
+
+  - id: top-003
+    name: 블루 스트라이프 셔츠
+    slot: top
+    category: shirt
+    brand: cos
+    color: { primary: blue, secondary: white, tone: light }
+    formality: 3
+    fit: relaxed
+    warmth: 2
+    pattern: stripe
+    material: cotton
+
+  - id: top-004
+    name: 그레이 로고 맨투맨
+    slot: top
+    category: sweatshirt
+    brand: nike
+    color: { primary: gray, tone: medium }
+    formality: 2
+    fit: oversized
+    warmth: 3
+    pattern: graphic
+    material: cotton
+
+  - id: top-005
+    name: 화이트 무지 티셔츠
+    slot: top
+    category: tshirt
+    brand: uniqlo
+    color: { primary: white, tone: light }
+    formality: 2
+    fit: regular
+    warmth: 1
+    pattern: solid
+    material: cotton
+
+  - id: top-006
+    name: 블랙 무지 티셔츠
+    slot: top
+    category: tshirt
+    brand: musinsa_standard
+    color: { primary: black, tone: dark }
+    formality: 2
+    fit: regular
+    warmth: 1
+    pattern: solid
+    material: cotton
+
+  - id: top-007
+    name: 네이비 터틀넥 니트
+    slot: top
+    category: knit
+    brand: cos
+    color: { primary: navy, tone: dark }
+    formality: 4
+    fit: slim
+    warmth: 5
+    pattern: solid
+    material: wool
+
+  - id: top-008
+    name: 아이보리 케이블 니트
+    slot: top
+    category: knit
+    brand: polo_ralph_lauren
+    color: { primary: ivory, tone: light }
+    formality: 3
+    fit: regular
+    warmth: 5
+    pattern: solid
+    material: wool
+
+  - id: top-009
+    name: 블랙 그래픽 후디
+    slot: top
+    category: hoodie
+    brand: stussy
+    color: { primary: black, tone: dark }
+    formality: 1
+    fit: oversized
+    warmth: 4
+    pattern: graphic
+    material: cotton
+
+  - id: top-010
+    name: 네이비 피케 폴로
+    slot: top
+    category: polo
+    brand: polo_ralph_lauren
+    color: { primary: navy, tone: dark }
+    formality: 3
+    fit: regular
+    warmth: 1
+    pattern: solid
+    material: cotton
+
+  - id: top-011
+    name: 블루 체크 플란넬 셔츠
+    slot: top
+    category: shirt
+    brand: beams_plus
+    color: { primary: blue, secondary: navy, tone: medium }
+    formality: 2
+    fit: regular
+    warmth: 3
+    pattern: check
+    material: cotton
+
+  - id: top-012
+    name: 베이지 린넨 셔츠
+    slot: top
+    category: shirt
+    brand: lemaire
+    color: { primary: beige, tone: light }
+    formality: 3
+    fit: relaxed
+    warmth: 1
+    pattern: solid
+    material: linen
+
+  - id: top-013
+    name: 버건디 램스울 니트
+    slot: top
+    category: knit
+    brand: beams_plus
+    color: { primary: burgundy, tone: dark }
+    formality: 3
+    fit: regular
+    warmth: 4
+    pattern: solid
+    material: wool
+
+  - id: top-014
+    name: 올리브 포켓 티셔츠
+    slot: top
+    category: tshirt
+    brand: carhartt_wip
+    color: { primary: olive, tone: medium }
+    formality: 2
+    fit: relaxed
+    warmth: 1
+    pattern: solid
+    material: cotton
+
+  - id: top-015
+    name: 차콜 하프집 니트
+    slot: top
+    category: knit
+    brand: musinsa_standard
+    color: { primary: charcoal, tone: dark }
+    formality: 3
+    fit: regular
+    warmth: 4
+    pattern: solid
+    material: wool
+
+  - id: top-016
+    name: 스카이블루 옥스퍼드 셔츠
+    slot: top
+    category: shirt
+    brand: uniqlo
+    color: { primary: skyblue, tone: light }
+    formality: 3
+    fit: regular
+    warmth: 2
+    pattern: solid
+    material: cotton
+    mood_override: [classic, minimal]
+
+  - id: bottom-001
+    name: 차콜 울 슬랙스
+    slot: bottom
+    category: slacks
+    brand: cos
+    color: { primary: charcoal, tone: dark }
+    formality: 4
+    fit: regular
+    warmth: 4
+    pattern: solid
+    material: wool
+
+  - id: bottom-002
+    name: 인디고 생지 데님
+    slot: bottom
+    category: denim
+    brand: levis
+    color: { primary: indigo, tone: dark }
+    formality: 3
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: denim
+
+  - id: bottom-003
+    name: 베이지 치노
+    slot: bottom
+    category: chino
+    brand: polo_ralph_lauren
+    color: { primary: beige, tone: light }
+    formality: 3
+    fit: regular
+    warmth: 2
+    pattern: solid
+    material: cotton
+
+  - id: bottom-004
+    name: 라이트 워싱 데님
+    slot: bottom
+    category: denim
+    brand: levis
+    color: { primary: skyblue, tone: light }
+    formality: 2
+    fit: relaxed
+    warmth: 3
+    pattern: solid
+    material: denim
+
+  - id: bottom-005
+    name: 블랙 와이드 슬랙스
+    slot: bottom
+    category: slacks
+    brand: lemaire
+    color: { primary: black, tone: dark }
+    formality: 4
+    fit: relaxed
+    warmth: 3
+    pattern: solid
+    material: wool
+
+  - id: bottom-006
+    name: 그레이 스웨트팬츠
+    slot: bottom
+    category: sweatpants
+    brand: nike
+    color: { primary: gray, tone: medium }
+    formality: 1
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: cotton
+
+  - id: bottom-007
+    name: 카키 더블니 워크팬츠
+    slot: bottom
+    category: workpants
+    brand: carhartt_wip
+    color: { primary: khaki, tone: medium }
+    formality: 2
+    fit: relaxed
+    warmth: 3
+    pattern: solid
+    material: cotton
+
+  - id: bottom-008
+    name: 네이비 린넨 쇼츠
+    slot: bottom
+    category: shorts
+    brand: uniqlo
+    color: { primary: navy, tone: dark }
+    formality: 2
+    fit: regular
+    warmth: 1
+    pattern: solid
+    material: linen
+
+  - id: bottom-009
+    name: 그레이 플란넬 슬랙스
+    slot: bottom
+    category: slacks
+    brand: musinsa_standard
+    color: { primary: gray, tone: medium }
+    formality: 4
+    fit: slim
+    warmth: 4
+    pattern: solid
+    material: wool
+
+  - id: bottom-010
+    name: 브라운 코듀로이 팬츠
+    slot: bottom
+    category: corduroy
+    brand: beams_plus
+    color: { primary: brown, tone: medium }
+    formality: 3
+    fit: regular
+    warmth: 4
+    pattern: solid
+    material: cotton
+
+  - id: bottom-011
+    name: 블랙 나일론 카고
+    slot: bottom
+    category: cargo
+    brand: arcteryx
+    color: { primary: black, tone: dark }
+    formality: 2
+    fit: regular
+    warmth: 2
+    pattern: solid
+    material: nylon
+
+  - id: bottom-012
+    name: 아이보리 여름 슬랙스
+    slot: bottom
+    category: slacks
+    brand: cos
+    color: { primary: ivory, tone: light }
+    formality: 3
+    fit: relaxed
+    warmth: 1
+    pattern: solid
+    material: linen
+
+  - id: shoes-001
+    name: 블랙 더비 슈즈
+    slot: shoes
+    category: derby
+    brand: dr_martens
+    color: { primary: black, tone: dark }
+    formality: 4
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: leather
+    mood_override: [classic, workwear]
+
+  - id: shoes-002
+    name: 화이트 레더 스니커즈
+    slot: shoes
+    category: sneakers
+    brand: musinsa_standard
+    color: { primary: white, tone: light }
+    formality: 3
+    fit: regular
+    warmth: 2
+    pattern: solid
+    material: leather
+
+  - id: shoes-003
+    name: 브라운 미카엘
+    slot: shoes
+    category: derby
+    brand: paraboot
+    color: { primary: brown, tone: medium }
+    formality: 4
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: leather
+
+  - id: shoes-004
+    name: 그레이 990
+    slot: shoes
+    category: sneakers
+    brand: new_balance
+    color: { primary: gray, tone: medium }
+    formality: 2
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: suede
+
+  - id: shoes-005
+    name: 블랙 XT-6
+    slot: shoes
+    category: sneakers
+    brand: salomon
+    color: { primary: black, tone: dark }
+    formality: 2
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: nylon
+
+  - id: shoes-006
+    name: 블랙 첼시 부츠
+    slot: shoes
+    category: boots
+    brand: dr_martens
+    color: { primary: black, tone: dark }
+    formality: 3
+    fit: regular
+    warmth: 4
+    pattern: solid
+    material: leather
+
+  - id: shoes-007
+    name: 브라운 스웨이드 로퍼
+    slot: shoes
+    category: loafer
+    brand: polo_ralph_lauren
+    color: { primary: brown, tone: medium }
+    formality: 4
+    fit: regular
+    warmth: 2
+    pattern: solid
+    material: suede
+
+  - id: shoes-008
+    name: 화이트 에어포스
+    slot: shoes
+    category: sneakers
+    brand: nike
+    color: { primary: white, tone: light }
+    formality: 2
+    fit: regular
+    warmth: 3
+    pattern: solid
+    material: leather
+
+  - id: shoes-009
+    name: 블랙 가죽 샌들
+    slot: shoes
+    category: sandals
+    color: { primary: black, tone: dark }
+    formality: 2
+    fit: regular
+    warmth: 1
+    pattern: solid
+    material: leather
+    mood_override: [minimal]
+
+  - id: acc-001
+    name: 그레이 울 머플러
+    slot: accessory
+    category: muffler
+    color: { primary: gray, tone: medium }
+    formality: 3
+    warmth: 5
+    pattern: solid
+    material: wool
+    mood_override: [minimal]
+
+  - id: acc-002
+    name: 블랙 레더 토트백
+    slot: accessory
+    category: bag
+    brand: cos
+    color: { primary: black, tone: dark }
+    formality: 4
+    pattern: solid
+    material: leather
+
+  - id: acc-003
+    name: 네이비 볼캡
+    slot: accessory
+    category: cap
+    brand: polo_ralph_lauren
+    color: { primary: navy, tone: dark }
+    formality: 2
+    pattern: solid
+    material: cotton
+
+  - id: acc-004
+    name: 블랙 나일론 크로스백
+    slot: accessory
+    category: bag
+    brand: arcteryx
+    color: { primary: black, tone: dark }
+    formality: 2
+    pattern: solid
+    material: nylon
+
+  - id: acc-005
+    name: 버건디 캐시미어 머플러
+    slot: accessory
+    category: muffler
+    brand: lemaire
+    color: { primary: burgundy, tone: dark }
+    formality: 4
+    warmth: 5
+    pattern: solid
+    material: cashmere

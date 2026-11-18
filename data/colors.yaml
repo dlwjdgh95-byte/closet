@@ -1,0 +1,26 @@
+# 색 사전. 옷의 color.primary / color.secondary는 이 키만 씁니다.
+# neutral: 무채색·기본색 여부 (어떤 색과도 무난하게 어울림)
+# hex: 화면에 그릴 때 쓰는 대표 색
+# family: 유채색의 계열. 같은 계열은 한 가지 색으로 셉니다(톤온톤).
+
+colors:
+  black:    { label: 블랙, hex: "#1d1d20",   neutral: true }
+  white:    { label: 화이트, hex: "#f4f1ea", neutral: true }
+  gray:     { label: 그레이, hex: "#9b9a97", neutral: true }
+  charcoal: { label: 차콜, hex: "#3f4146",   neutral: true }
+  navy:     { label: 네이비, hex: "#1f2b47", neutral: true }
+  beige:    { label: 베이지, hex: "#d5c2a0", neutral: true }
+  ivory:    { label: 아이보리, hex: "#eee6d3", neutral: true }
+  brown:    { label: 브라운, hex: "#7b5334", neutral: true }
+  indigo:   { label: 인디고(데님), hex: "#27375f", neutral: true }
+  khaki:    { label: 카키, hex: "#8b8358",   neutral: false, family: green }
+  olive:    { label: 올리브, hex: "#5c6339", neutral: false, family: green }
+  blue:     { label: 블루, hex: "#3f6fb4",   neutral: false, family: blue }
+  skyblue:  { label: 스카이블루, hex: "#a9c5e4", neutral: false, family: blue }
+  green:    { label: 그린, hex: "#2f6b4b",   neutral: false, family: green }
+  red:      { label: 레드, hex: "#b2322d",   neutral: false, family: red }
+  burgundy: { label: 버건디, hex: "#6f202d", neutral: false, family: red }
+  pink:     { label: 핑크, hex: "#e2a9b5",   neutral: false, family: red }
+  yellow:   { label: 옐로, hex: "#e0bf4b",   neutral: false, family: yellow }
+  orange:   { label: 오렌지, hex: "#d8782c", neutral: false, family: orange }
+  purple:   { label: 퍼플, hex: "#6a4d92",   neutral: false, family: purple }

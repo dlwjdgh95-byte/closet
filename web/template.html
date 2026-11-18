@@ -1,0 +1,565 @@
+<title>오늘의 옷장</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 레이아웃: 화면 가득 실사 옷장 한 장. 문이 열리면 빈 옷장 봉에 오늘 옷이 걸리고 바닥에 신발이 놓인다. 그 아래 조건 한 줄. */
+:root {
+  color-scheme: dark;
+  --ground: #0e0a07;        /* 사진 속 마룻바닥 그늘 */
+  --lamp: #ffd596;          /* 옷장 안 조명 */
+  --shade: #0b0705;
+  --wood-3: #1f1008;
+  --brass-hi: #f3dc9c;
+  --brass: #c9a55d;
+  --brass-dim: #7d6331;
+  --paper: #efe6d2;
+  --tag: #e8dcc0;
+  --tag-lo: #d6c8a6;
+  --ink: #2a180c;
+  --muted: #a89c84;
+  --line: #3a2a1c;
+  --display: "Gowun Batang", "Noto Serif KR", Georgia, serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--ground);
+  color: var(--paper);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ---------- 옷장 ---------- */
+.stage {
+  position: relative; overflow: hidden; isolation: isolate;
+  container: stage / size;
+  width: 100%; max-width: 100%;
+  aspect-ratio: 16 / 9; max-height: min(86vh, 860px);
+  background: var(--ground);
+  cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.stage:focus-visible { outline: 2px solid var(--paper); outline-offset: -4px; }
+/* 사진·영상과 옷이 같은 좌표를 쓰도록, 16:9 장면을 무대에 꽉 차게(cover) 놓는다 */
+.scene {
+  --sw: max(100cqw, 177.78cqh);
+  --sh: max(100cqh, 56.25cqw);
+  position: absolute; width: var(--sw); height: var(--sh);
+  left: calc(50% - var(--sw) / 2); top: calc(50% - var(--sh) / 2);
+}
+.shot {
+  position: absolute; inset: 0; width: 100%; height: 100%; max-width: none;
+  object-fit: cover; display: block; pointer-events: none;
+}
+.shot.closed { transition: filter .4s ease; }
+.stage:not(.open):not(.playing):hover .shot.closed { filter: brightness(1.09); }
+.shot.inside { opacity: 0; transition: opacity .7s ease; }
+.shot.film { opacity: 0; }
+.stage.playing .film { opacity: 1; }
+.stage.playing .inside, .stage.open .inside { opacity: 1; }
+.stage.playing .inside { transition: none; }
+.veil {                          /* 가장자리만 살짝 어둡게 */
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity .9s ease;
+  background: radial-gradient(ellipse 90% 95% at 50% 42%, transparent 55%, rgba(11,7,5,.6));
+}
+.stage.open .veil { opacity: 1; }
+.stage::after {                  /* 사진 아랫단을 바닥색으로 잇기 */
+  content: ""; position: absolute; inset: auto 0 0; height: 14%; pointer-events: none; z-index: 2;
+  background: linear-gradient(transparent, var(--ground));
+}
+.burst {
+  position: absolute; inset: -20%; z-index: 5; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #fff1c4 0, rgba(255,210,122,.7) 18%, transparent 58%);
+}
+.stage.flash .burst { animation: burst .9s ease-out; }
+.stage.open.rolling .burst { animation: throb var(--roll, .9s) ease-in; }
+@keyframes burst { 0% { opacity: 0; transform: scale(.2); } 16% { opacity: .95; } 100% { opacity: 0; transform: scale(1.4); } }
+@keyframes throb { 0% { opacity: 0; transform: scale(.25); } 100% { opacity: .5; transform: scale(.6); } }
+.stage:not(.open).rolling .closed { animation: rattle var(--roll, 1.4s) linear; }
+@keyframes rattle {
+  0%,100% { transform: scale(1.03); }
+  12% { transform: scale(1.03) translateX(-1px); } 24% { transform: scale(1.03) translateX(1px); }
+  36% { transform: scale(1.03) translateX(-2px); } 48% { transform: scale(1.03) translateX(2px); }
+  60% { transform: scale(1.03) translateX(-3px); } 72% { transform: scale(1.03) translateX(3px); }
+  84% { transform: scale(1.03) translateX(-4px); } 94% { transform: scale(1.03) translateX(4px); }
+}
+
+/* 오늘 옷: 위칸은 영상 마지막 장면의 봉(위 11%, 좌 24%~우 75.6%)에, 아래칸은 뒤판 놋쇠 고리와 바닥에 둔다.
+   겉옷이 있으면  [겉옷 | 윗옷] / [머플러·신발 | 바지]
+   겉옷이 없으면  [윗옷 | 머플러·신발] / [바지 | 〃] */
+.outfit {
+  --g: calc(var(--sw) * .16);      /* 옷 한 벌 폭 */
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+}
+.set {
+  position: absolute; left: 24%; right: 24.4%; top: calc(11.1% - var(--g) * .016); bottom: 3.5%;
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: minmax(0, 49fr) minmax(0, 51fr);
+  column-gap: calc(var(--sw) * .01);
+  grid-template-areas: "a b" "s p";
+}
+.set.no-outer { grid-template-areas: "b s" "p s"; }
+.set > * { min-width: 0; min-height: 0; justify-self: center; }
+.set .outer { grid-area: a; }
+.set .top { grid-area: b; }
+.set .bottom { grid-area: p; }
+.side { grid-area: s; justify-self: stretch; display: flex; flex-direction: column; align-items: center; }
+.piece.hung { width: var(--g); transform-origin: 50% 0; }
+.piece.bottom { --pw: calc(var(--g) * .9); --px: 53%; --py: calc(var(--pw) * .033); width: var(--pw); }
+.piece.drape { --pw: calc(var(--g) * .55); --px: 50%; --py: calc(var(--pw) * .17); width: var(--pw); }
+.set.no-outer .piece.drape { margin-top: calc(var(--pw) * -.135); }   /* 겉옷이 없으면 봉에 걸침 */
+.set.no-outer .piece.drape::before { display: none; }
+.peg::before {                   /* 뒤판에 박힌 놋쇠 고리 */
+  content: ""; position: absolute; z-index: -1;
+  width: calc(var(--pw) * .08); aspect-ratio: 1; border-radius: 50%;
+  left: calc(var(--px) - var(--pw) * .04); top: calc(var(--py) - var(--pw) * .04);
+  background: radial-gradient(circle at 35% 35%, var(--brass-hi), var(--brass) 45%, var(--brass-dim));
+  box-shadow: 1px 2px 3px rgba(0,0,0,.6), 0 0 0 calc(var(--pw) * .012) rgba(31,16,8,.55);
+}
+.floor { margin-top: auto; display: flex; align-items: flex-end; justify-content: center; gap: calc(var(--sw) * .02); }
+.floor .piece { width: calc(var(--g) * .62); flex-direction: column-reverse; }
+.floor .piece figcaption { width: max-content; max-width: calc(var(--g) * 1.2); }
+.set.no-outer .floor { flex-direction: column-reverse; align-items: center; gap: calc(var(--sw) * .012); }   /* 칸이 높으니 가방을 신발 위로 */
+.piece { width: var(--g); min-width: 0; transform-origin: 50% 0; }
+.floor { bottom: 3.5%; align-items: flex-end; gap: calc(var(--sw) * .03); }
+.floor .piece { width: calc(var(--g) * .72); flex-direction: column-reverse; }
+.floor .piece figcaption { width: max-content; max-width: calc(var(--g) * 1.35); }
+.piece {
+  min-width: 0; margin: 0; position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0;
+}
+.piece svg { width: 100%; height: auto; overflow: visible; filter: drop-shadow(6px 12px 10px rgba(0,0,0,.6)); }
+.piece figcaption {
+  max-width: 100%;
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(11px, 1.1cqw + 6px, 16px); line-height: 1.3; text-align: center; text-wrap: balance; word-break: keep-all;
+  color: var(--ink); background: linear-gradient(var(--tag), var(--tag-lo));
+  padding: 2px 10px 2px 16px; border-radius: 2px; position: relative;
+  box-shadow: 0 2px 5px rgba(0,0,0,.6);
+  transform: rotate(-1.2deg);
+}
+.piece:nth-child(odd) figcaption { transform: rotate(1deg); }
+.piece figcaption::before {      /* 꼬리표 구멍 */
+  content: ""; position: absolute; left: 5px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px;
+  border-radius: 50%; background: var(--wood-3); box-shadow: 0 0 0 1px var(--brass-dim);
+}
+.piece figcaption b { font-weight: 400; }
+.stage.open .piece { animation: pop .6s cubic-bezier(.2,1.3,.4,1) forwards; animation-delay: calc(.12s + var(--i) * .16s); }
+.stage.open .piece.hung { animation-name: hang; animation-timing-function: ease-out; animation-duration: .8s; }
+.stage.open .outfit.leaving .piece { animation: leave .25s ease-in forwards; }
+@keyframes pop { from { opacity: 0; transform: translateY(18px) scale(.86); } to { opacity: 1; transform: none; } }
+@keyframes hang {
+  0% { opacity: 0; transform: translateY(-16px) rotate(-4deg); }
+  45% { opacity: 1; transform: rotate(2.5deg); }
+  75% { transform: rotate(-1deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes leave { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px) scale(.96); } }
+@container stage (max-aspect-ratio: 1 / 1) {
+  .outfit { --g: calc(var(--sw) * .14); }
+  .set { column-gap: calc(var(--sw) * .006); }
+  .floor .piece figcaption { max-width: calc(var(--g) * .95); }
+}
+
+/* ---------- 조건 ---------- */
+.controls {
+  display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; justify-content: center;
+  padding-block: 18px 36px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.controls fieldset { border: 0; padding: 0; margin: 0; display: flex; gap: 6px; min-width: 0; }
+.controls legend, .label { font-size: 12px; letter-spacing: 0.12em; color: var(--muted); }
+.controls legend { float: left; margin-right: 10px; padding: 0; line-height: 34px; }
+.pill input, .check input { position: absolute; opacity: 0; pointer-events: none; }
+.pill span {
+  display: block; padding: 5px 13px; border: 1px solid var(--brass-dim); border-radius: 999px;
+  cursor: pointer; color: var(--paper); white-space: nowrap; font-family: var(--display);
+}
+.pill input:checked + span {
+  background: linear-gradient(var(--brass-hi), var(--brass)); color: var(--ink); border-color: var(--brass); font-weight: 700;
+}
+.pill input:focus-visible + span, .check input:focus-visible + span, input[type=range]:focus-visible {
+  outline: 2px solid var(--paper); outline-offset: 2px;
+}
+.temp { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.temp input { width: 150px; max-width: 40vw; accent-color: var(--brass); }
+.temp output { font-variant-numeric: tabular-nums; min-width: 3.4em; font-weight: 600; }
+.check span { padding: 5px 12px; border: 1px solid var(--line); border-radius: 3px; cursor: pointer; color: var(--muted); }
+.check input:checked + span { border-color: var(--brass); color: var(--brass); }
+.empty {
+  text-align: center; color: var(--muted); margin: -20px 0 0; padding-block: 0 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+@media (max-width: 860px) { .stage { aspect-ratio: 4 / 3; } }
+@media (max-width: 520px) {
+  .stage { aspect-ratio: 4 / 5; }
+  .controls { justify-content: flex-start; }
+  .controls legend { float: none; display: block; line-height: 1.6; margin-bottom: 4px; }
+  .controls fieldset { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage.flash .burst, .stage.rolling .burst, .stage.rolling .closed { animation: none !important; }
+  .shot, .veil { transition-duration: .01s !important; }
+  .stage.open .piece { animation-duration: .01s; animation-delay: 0s; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6e2a6"/><stop offset=".45" stop-color="#c9a55d"/><stop offset="1" stop-color="#6d5527"/>
+    </linearGradient>
+    <linearGradient id="vol" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#000" stop-opacity=".42"/><stop offset=".2" stop-color="#000" stop-opacity=".06"/>
+      <stop offset=".42" stop-color="#fff" stop-opacity=".13"/><stop offset=".62" stop-color="#000" stop-opacity=".04"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".46"/>
+    </linearGradient>
+    <linearGradient id="fall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".10"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".30"/>
+    </linearGradient>
+    <filter id="weave" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1 0.7" numOctaves="2" seed="3" result="n"/>
+      <feColorMatrix in="n" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 -0.17" result="g"/>
+      <feComposite in="g" in2="SourceAlpha" operator="in" result="t"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="t"/></feMerge>
+    </filter>
+  </defs>
+</svg>
+
+<!-- 닫힌 사진(영상 첫 장면) 위로 여는 영상이 지나가고, 영상 마지막 장면(inside)에서 멈춘 채 옷이 걸립니다. -->
+<div class="stage" id="stage" role="button" tabindex="0" aria-label="옷장 열기">
+  <div class="scene">
+    <img class="shot closed" src="assets/closed.jpg" alt="" draggable="false">
+    <img class="shot inside" src="assets/inside.jpg" alt="" draggable="false">
+    <video class="shot film" id="film" src="assets/opening.mp4" muted playsinline preload="auto" disablepictureinpicture tabindex="-1"></video>
+    <div class="outfit" id="interior" aria-live="polite"></div>
+  </div>
+  <div class="veil"></div>
+  <div class="burst"></div>
+</div>
+
+<form class="controls" id="controls">
+  <fieldset>
+    <legend>어디로</legend>
+    <span id="tpo-pills"></span>
+  </fieldset>
+  <div class="temp">
+    <label class="label" for="temp">체감기온</label>
+    <input type="range" id="temp" min="-10" max="35" step="1" value="8">
+    <output id="temp-out" for="temp">8℃</output>
+  </div>
+  <label class="check"><input type="checkbox" id="rain"><span>비</span></label>
+  <label class="check"><input type="checkbox" id="sound" checked><span>소리</span></label>
+</form>
+<p class="empty" id="empty" hidden>이 조건에 맞는 옷이 없습니다.</p>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+const KIND = {
+  coat: "코트", padding: "패딩", jacket: "자켓", blazer: "블레이저", shell: "바람막이", cardigan: "가디건",
+  shirt: "셔츠", knit: "니트", sweatshirt: "맨투맨", tshirt: "티셔츠", hoodie: "후디", polo: "피케 셔츠",
+  slacks: "슬랙스", denim: "데님", chino: "치노", sweatpants: "스웨트팬츠", workpants: "워크팬츠",
+  shorts: "쇼츠", corduroy: "코듀로이", cargo: "카고", derby: "더비", sneakers: "스니커즈", boots: "부츠",
+  loafer: "로퍼", sandals: "샌들", muffler: "머플러", bag: "가방", cap: "모자",
+};
+const FIT_W = { slim: 0.9, regular: 1, relaxed: 1.09, oversized: 1.18 };
+const $ = (id) => document.getElementById(id);
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- 옷 그림 ---------- */
+const LONG = "M45,16 L28,22 L7,98 L21,103 L35,54 L35,124 L85,124 L85,54 L99,103 L113,98 L92,22 L75,16 Q60,26 45,16 Z";
+const SHORT = "M45,16 L27,23 L9,48 L23,59 L35,48 L35,124 L85,124 L85,48 L97,59 L111,48 L93,23 L75,16 Q60,26 45,16 Z";
+const COAT = "M45,14 L28,20 L8,100 L22,105 L34,56 L31,146 L89,146 L86,56 L98,105 L112,100 L92,20 L75,14 Q60,22 45,14 Z";
+const PANTS = "M36,8 L84,8 L90,142 L64,142 L60,52 L56,142 L30,142 Z";
+const SHORTS = "M36,8 L84,8 L91,76 L63,76 L60,48 L57,76 L29,76 Z";
+const LOW = "M8,52 Q8,34 28,32 L50,30 Q60,30 68,38 Q86,46 104,50 Q114,52 114,60 L114,66 L8,66 Z";
+const BOOT = "M14,6 L48,6 L50,36 Q70,44 102,50 Q114,52 114,60 L114,66 L14,66 Z";
+const HOOD = '<path d="M41,19 Q60,-6 79,19 Q60,31 41,19 Z"/>';
+const COLLAR = '<path d="M45,16 L60,31 L51,38 Z"/><path d="M75,16 L60,31 L69,38 Z"/>';
+const dots = (x, ys, r = 1.6) => ys.map((y) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join("");
+const lines = (list) => list.map(([a, b, c, d]) => `<path d="M${a},${b} L${c},${d}"/>`).join("");
+
+function garment(item) {
+  const hex = DATA.colors[item.color.primary].hex;
+  const second = item.color.secondary ? DATA.colors[item.color.secondary].hex : null;
+  const dark = item.color.tone === "dark";
+  const ink = dark ? "rgba(255,255,255,.34)" : "rgba(0,0,0,.34)";
+  const mark = dark ? "#efe6d2" : "#2c190e";
+  const pid = "p-" + item.id;
+  let defs = "", fill = hex;
+  if (item.pattern === "stripe") {
+    defs = `<pattern id="${pid}" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="${hex}"/><rect width="3" height="9" fill="${second || mark}" opacity=".85"/></pattern>`;
+    fill = `url(#${pid})`;
+  } else if (item.pattern === "check") {
+    defs = `<pattern id="${pid}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${hex}"/><rect width="5" height="16" fill="${second || mark}" opacity=".6"/><rect width="16" height="5" fill="${second || mark}" opacity=".6"/></pattern>`;
+    fill = `url(#${pid})`;
+  } else if (item.pattern === "dot") {
+    defs = `<pattern id="${pid}" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="${hex}"/><circle cx="5" cy="5" r="1.6" fill="${second || mark}"/></pattern>`;
+    fill = `url(#${pid})`;
+  }
+  const emblem = item.pattern === "graphic" ? `<circle cx="60" cy="64" r="10" fill="none" stroke="${mark}" stroke-width="3"/><path d="M54,64 L66,64" stroke="${mark}" stroke-width="3"/>` : "";
+  const hook = (y) => `<path d="M60,${y} L60,${y - 9} Q60,${y - 17} 67.5,${y - 13.5}" fill="none" stroke="#3d2f14" stroke-width="3.4" stroke-linecap="round"/><path d="M60,${y} L60,${y - 9} Q60,${y - 17} 67.5,${y - 13.5}" fill="none" stroke="url(#brass)" stroke-width="2.2" stroke-linecap="round"/>`;
+  const hanger = `<path d="M33,27 Q60,9 87,27" fill="none" stroke="#3a2412" stroke-width="6" stroke-linecap="round"/><path d="M33,26 Q60,8 87,26" fill="none" stroke="#b9895a" stroke-width="3.6" stroke-linecap="round"/>` + hook(17);
+  const clip = `<path d="M36,7 L84,7" stroke="#3d2f14" stroke-width="5" stroke-linecap="round"/><path d="M36,6.5 L84,6.5" stroke="url(#brass)" stroke-width="3" stroke-linecap="round"/>` + hook(6);
+  const rim = 'stroke="rgba(255,236,200,.26)" stroke-width="1" stroke-linejoin="round"';
+  const body = (d, shade = "vol") => `<path d="${d}" fill="${fill}" ${rim} filter="url(#weave)"/><path d="${d}" fill="url(#${shade})"/><path d="${d}" fill="url(#fall)"/>`;
+  const solid = (inner) => `<g fill="${hex}" ${rim} filter="url(#weave)">${inner}</g><g fill="url(#fall)">${inner}</g>`;
+  const detail = (inner) => `<g fill="none" stroke="${ink}" stroke-width="1.5" stroke-linecap="round">${inner}</g>`;
+  const btn = (inner) => `<g fill="${ink}">${inner}</g>`;
+  const c = item.category;
+  let box = "0 0 120 150", art = "", scale = true;
+
+  if (item.slot === "top") {
+    const short = c === "tshirt" || c === "polo";
+    art = (c === "hoodie" ? solid(HOOD) : "") + hanger + body(short ? SHORT : LONG);
+    if (c === "shirt") art += solid(COLLAR) + detail(lines([[60, 31, 60, 124]])) + btn(dots(60, [46, 64, 82, 100, 116]));
+    else if (c === "polo") art += solid(COLLAR) + detail(lines([[60, 31, 60, 58]])) + btn(dots(60, [40, 51]));
+    else if (c === "knit") art += detail('<path d="M45,16 Q60,29 75,16"/><path d="M47,20 Q60,32 73,20"/>' + lines([[35, 116, 85, 116], [42, 116, 42, 124], [51, 116, 51, 124], [60, 116, 60, 124], [69, 116, 69, 124], [78, 116, 78, 124]]));
+    else if (c === "hoodie") art += detail('<path d="M46,96 L74,96 L78,116 L42,116 Z"/>' + lines([[55, 26, 54, 44], [65, 26, 66, 44], [35, 117, 85, 117]]));
+    else art += detail('<path d="M45,16 Q60,29 75,16"/>' + (c === "sweatshirt" ? lines([[35, 117, 85, 117]]) : ""));
+    art += emblem;
+    box = "0 0 120 130";
+  } else if (item.slot === "outer") {
+    if (c === "coat") {
+      art = hanger + body(COAT) + detail(lines([[45, 14, 60, 50], [75, 14, 60, 50], [60, 50, 60, 146], [38, 96, 50, 96], [70, 96, 82, 96]])) + btn(dots(65, [64, 84, 104], 2));
+    } else {
+      art = (c === "shell" ? solid(HOOD) : "") + hanger + body(LONG);
+      if (c === "blazer") art += detail(lines([[45, 16, 60, 74], [75, 16, 60, 74], [60, 74, 60, 124], [70, 60, 80, 60], [38, 100, 50, 100], [70, 100, 82, 100]])) + btn(dots(64, [84, 100], 2));
+      else if (c === "padding") art += solid('<path d="M46,9 L74,9 L75,18 Q60,26 45,18 Z"/>') + detail(lines([[60, 22, 60, 124], [35, 58, 85, 58], [35, 76, 85, 76], [35, 94, 85, 94], [35, 110, 85, 110], [24, 44, 34, 47], [96, 44, 86, 47], [17, 70, 30, 74], [103, 70, 90, 74]]));
+      else if (c === "shell") art += detail(lines([[60, 26, 60, 124], [42, 62, 52, 70], [78, 62, 68, 70]]));
+      else if (c === "cardigan") art += detail(lines([[45, 16, 60, 62], [75, 16, 60, 62], [60, 62, 60, 124], [35, 117, 85, 117]])) + btn(dots(64, [74, 90, 106], 2));
+      else art += solid(COLLAR) + detail(lines([[60, 31, 60, 124]]) + '<rect x="40" y="52" width="13" height="13"/><rect x="67" y="52" width="13" height="13"/>') + btn(dots(64, [44, 62, 80, 98, 114], 1.8));
+      box = "0 0 120 130";
+    }
+  } else if (item.slot === "bottom") {
+    const short = c === "shorts";
+    art = clip + body(short ? SHORTS : PANTS) + detail(lines([[36, 17, 84, 17], [60, 17, 60, 40]]));
+    if (c === "slacks") art += detail(lines([[47, 20, 43, 142], [73, 20, 77, 142]]));
+    else if (c === "denim") art += detail('<path d="M38,18 Q43,31 51,18"/><path d="M69,18 Q77,31 82,18"/>');
+    else if (c === "cargo" || c === "workpants") art += detail('<rect x="32" y="64" width="13" height="20"/><rect x="75" y="64" width="13" height="20"/>');
+    else if (c === "corduroy") art += detail(lines([[41, 20, 37, 142], [47, 20, 44, 142], [53, 20, 51, 142], [67, 20, 69, 142], [73, 20, 76, 142], [79, 20, 83, 142]]));
+    else if (c === "sweatpants") art += detail(lines([[31, 134, 56, 134], [64, 134, 89, 134]]));
+    else if (!short) art += detail(lines([[40, 20, 46, 32], [80, 20, 74, 32]]));
+    box = short ? "0 -9 120 93" : "0 -9 120 159";   // 고리 끝 높이를 윗옷과 맞춤
+  } else if (item.slot === "shoes") {
+    scale = false; box = c === "boots" ? "0 0 122 72" : c === "sandals" ? "0 18 122 54" : "0 26 122 46";   // 신발 위 빈칸을 잘라 꼬리표를 붙임
+    const sole = c === "sneakers" ? "#f1ede2" : "#1a110b";
+    if (c === "sandals") {
+      art = `<path d="M8,58 L114,58 L114,66 L8,66 Z" fill="${sole}" stroke="rgba(239,230,210,.5)" stroke-width="1.2"/>` +
+        `<g fill="none" stroke="${hex}" stroke-width="8" stroke-linecap="round"><path d="M30,56 Q42,26 58,56"/><path d="M64,56 Q78,34 94,56"/></g>` +
+        `<g fill="none" stroke="rgba(239,230,210,.5)" stroke-width="1"><path d="M26,56 Q42,20 62,56"/><path d="M60,56 Q78,28 98,56"/></g>`;
+    } else {
+      const d = c === "boots" ? BOOT : LOW;
+      art = body(d, "fall") + `<path d="M${c === "boots" ? 14 : 8},60 L114,60 L114,66 L${c === "boots" ? 14 : 8},66 Z" fill="${sole}" stroke="rgba(239,230,210,.5)" stroke-width="1"/>`;
+      if (c === "sneakers") art += detail(lines([[50, 34, 58, 30], [56, 39, 64, 34], [62, 44, 70, 39]]));
+      else if (c === "derby") art += detail('<path d="M46,31 Q52,44 70,44"/>') + btn(dots(56, [35], 1.5) + dots(62, [39], 1.5));
+      else if (c === "loafer") art += detail(lines([[50, 31, 68, 44], [55, 30, 72, 42]]));
+      else if (c === "boots") art += detail('<path d="M27,10 L31,34 L41,34 L43,10"/>');
+    }
+  } else {
+    scale = false; box = "0 0 120 120";
+    if (c === "muffler") {
+      art = solid('<path d="M37,42 L57,42 L55,106 L35,106 Z"/><path d="M63,42 L83,42 L87,98 L67,98 Z"/><path d="M28,18 L92,18 L92,44 L28,44 Z"/>') +
+        detail(lines([[38, 106, 38, 114], [44, 106, 44, 114], [50, 106, 50, 114], [70, 98, 70, 106], [76, 98, 77, 106], [82, 98, 83, 106], [28, 31, 92, 31]]));
+    } else if (c === "cap") {
+      art = solid('<path d="M24,76 Q24,30 62,30 Q98,30 98,76 Z"/><path d="M96,70 Q114,74 118,88 Q104,82 60,82 L60,76 L98,76 Z"/>') +
+        detail('<path d="M62,30 Q50,50 48,76"/><path d="M62,30 Q76,50 78,76"/>') + btn(dots(62, [29], 3));
+    } else if (item.material === "nylon") {
+      art = `<path d="M28,60 Q60,-14 92,60" fill="none" stroke="${hex}" stroke-width="5"/><path d="M28,60 Q60,-14 92,60" fill="none" stroke="rgba(239,230,210,.4)" stroke-width="1"/>` +
+        solid('<rect x="24" y="54" width="72" height="50" rx="10"/>') + detail(lines([[32, 68, 88, 68]]) + '<rect x="40" y="76" width="40" height="18" rx="3"/>');
+    } else {
+      art = `<path d="M42,52 Q42,16 60,16 Q78,16 78,52" fill="none" stroke="${hex}" stroke-width="5"/><path d="M42,52 Q42,16 60,16 Q78,16 78,52" fill="none" stroke="rgba(239,230,210,.4)" stroke-width="1"/>` +
+        solid('<path d="M26,50 L94,50 L100,110 L20,110 Z"/>') + detail(lines([[27, 60, 93, 60]]));
+    }
+  }
+  const w = scale ? (FIT_W[item.fit] || 1) : 1;
+  const g = w === 1 ? art : `<g transform="translate(60 0) scale(${w} 1) translate(-60 0)">${art}</g>`;
+  const hung = item.slot === "top" || item.slot === "outer" || item.slot === "bottom";
+  return `<svg viewBox="${box}" preserveAspectRatio="xMid${hung ? "YMin" : "YMax"} meet" role="img" aria-label="${item.name}"><defs>${defs}</defs>${g}</svg>`;
+}
+
+/* ---------- 소리 ---------- */
+let audio = null;
+function noise(ctx, dur) {
+  const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(); src.buffer = buf; return src;
+}
+function tap(ctx, t, vol) {
+  const n = noise(ctx, 0.07), f = ctx.createBiquadFilter(), g = ctx.createGain();
+  f.type = "bandpass"; f.frequency.value = 1700; f.Q.value = 0.8;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+  n.connect(f).connect(g).connect(ctx.destination); n.start(t); n.stop(t + 0.07);
+  const o = ctx.createOscillator(), og = ctx.createGain();
+  o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(120, t + 0.05);
+  og.gain.setValueAtTime(vol * 0.7, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+  o.connect(og).connect(ctx.destination); o.start(t); o.stop(t + 0.07);
+}
+function sound() {                 // 누른 순간에 불러 두어야 브라우저가 소리를 허락합니다
+  if (!$("sound").checked) return null;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    audio.resume();
+    return audio;
+  } catch (e) { return null; }     // 소리가 막힌 환경에서는 조용히 진행
+}
+function roll(dur) {                // 두구두구: 점점 빨라지고 커짐
+  const a = sound();
+  if (!a || dur <= 0) return;
+  const t0 = a.currentTime + 0.02;
+  for (let t = 0; t < dur;) {
+    const k = t / dur;
+    tap(a, t0 + t, 0.08 + 0.3 * k);
+    t += 0.11 - 0.07 * k;
+  }
+}
+function hit() {                    // 빵
+  const a = sound();
+  if (!a) return;
+  const t1 = a.currentTime + 0.01;
+  const n = noise(a, 1.2), f = a.createBiquadFilter(), g = a.createGain();
+  f.type = "highpass"; f.frequency.value = 4500;
+  g.gain.setValueAtTime(0.4, t1); g.gain.exponentialRampToValueAtTime(0.001, t1 + 1.1);
+  n.connect(f).connect(g).connect(a.destination); n.start(t1); n.stop(t1 + 1.2);
+  const k = a.createOscillator(), kg = a.createGain();
+  k.frequency.setValueAtTime(130, t1); k.frequency.exponentialRampToValueAtTime(45, t1 + 0.25);
+  kg.gain.setValueAtTime(0.7, t1); kg.gain.exponentialRampToValueAtTime(0.001, t1 + 0.3);
+  k.connect(kg).connect(a.destination); k.start(t1); k.stop(t1 + 0.32);
+  [523.25, 659.25, 783.99, 1046.5].forEach((hz) => {
+    const o = a.createOscillator(), og = a.createGain();
+    o.type = "triangle"; o.frequency.value = hz;
+    og.gain.setValueAtTime(0.12, t1); og.gain.exponentialRampToValueAtTime(0.001, t1 + 0.9);
+    o.connect(og).connect(a.destination); o.start(t1); o.stop(t1 + 0.95);
+  });
+}
+
+/* ---------- 상태 ---------- */
+const stage = $("stage"), film = $("film");
+const state = { tpo: Object.keys(DATA.tpo)[0], index: 0, busy: false, open: false, opened: 0 };
+const FIRST_RATE = 2, AGAIN_RATE = 2.8;   // 10초짜리 영상을 처음엔 5초, 다시 열 땐 더 빠르게
+
+function warmthFor(temp) {
+  for (const row of DATA.warmth_by_temp) if (temp >= row.min_temp) return row.warmth;
+  return 5;
+}
+function outfits() {
+  const key = [state.tpo, warmthFor(+$("temp").value), $("rain").checked ? 1 : 0].join("|");
+  return DATA.scenarios[key] || [];
+}
+
+function renderOutfit(o) {
+  const it = (slot) => o.items[slot] && DATA.items[o.items[slot]];
+  let i = 0;
+  const caption = (item) => `<b>${KIND[item.category] || item.category}${item.brand ? ":" : ""}</b>` + (item.brand ? " " + DATA.brands[item.brand] : "");
+  const piece = (item, cls = "") => `<figure class="piece ${cls}" style="--i:${i++}">${garment(item)}<figcaption>${caption(item)}</figcaption></figure>`;
+  const put = (slot, cls) => it(slot) ? piece(it(slot), cls) : "";
+  const drape = it("accessory") && it("accessory").category === "muffler";   // 머플러는 걸고, 가방·모자는 바닥에
+  const html = `<div class="set${it("outer") ? "" : " no-outer"}">` +
+    put("outer", "hung outer") + put("top", "hung top") + put("bottom", "hung bottom peg") +
+    `<div class="side">${drape ? put("accessory", "hung drape peg") : ""}<div class="floor">${put("shoes")}${drape ? "" : put("accessory")}</div></div></div>`;
+  $("interior").classList.remove("leaving");
+  $("interior").innerHTML = html;
+}
+
+function sync() {
+  $("temp-out").textContent = $("temp").value + "℃";
+  $("empty").hidden = outfits().length > 0;
+}
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* 문 여는 영상. 끝까지 틀었으면 true, 영상을 못 트는 환경이면 false. */
+function playFilm(rate) {
+  return new Promise((resolve) => {
+    if (reduced || film.error || !film.play) return resolve(false);
+    const off = new AbortController();
+    let started = false, guard = 0;
+    const finish = (ok) => { off.abort(); clearTimeout(guard); resolve(ok); };
+    const on = (type, fn) => film.addEventListener(type, fn, { signal: off.signal });
+    on("playing", () => {
+      if (started) return;
+      started = true;
+      film.playbackRate = rate;
+      stage.classList.add("playing");
+      const left = ((film.duration || 10) - film.currentTime) / rate;
+      roll(left);
+      clearTimeout(guard);
+      guard = setTimeout(() => finish(true), left * 1000 + 4000);   // 중간에 멈춰도 옷은 보여 줌
+    });
+    on("ended", () => finish(true));
+    on("error", () => finish(started));
+    guard = setTimeout(() => { film.pause(); finish(false); }, 3000);
+    try { film.currentTime = 0; } catch (e) { /* 아직 불러오는 중 */ }
+    film.playbackRate = rate;
+    const p = film.play();
+    if (p && p.catch) p.catch(() => finish(started));
+  });
+}
+
+async function rollFor(ms) {
+  stage.style.setProperty("--roll", ms + "ms");
+  stage.classList.add("rolling");
+  roll(ms / 1000);
+  await wait(ms);
+  stage.classList.remove("rolling");
+}
+
+function close() {
+  stage.classList.remove("open", "playing", "flash");
+  stage.setAttribute("aria-label", "옷장 열기");
+  $("interior").innerHTML = "";
+  film.pause();
+  state.open = false;
+}
+
+async function pull() {
+  if (state.busy || !outfits().length) return;
+  state.busy = true;
+  sound();
+  if (state.open) {                                   // 열려 있으면 다음 순위 코디로
+    state.index += 1;
+    $("interior").classList.add("leaving");
+    await rollFor(reduced ? 0 : 900);
+  } else {
+    const played = await playFilm(state.opened++ ? AGAIN_RATE : FIRST_RATE);
+    if (!played) await rollFor(reduced ? 0 : 1400);
+  }
+  const list = outfits();                             // 여는 사이 조건이 바뀌었을 수 있음
+  if (!list.length) { close(); state.busy = false; return; }
+  state.index %= list.length;
+  renderOutfit(list[state.index]);
+  stage.classList.add("open");
+  stage.classList.remove("playing", "flash");
+  void stage.offsetWidth;                             // 번쩍임을 처음부터 다시
+  stage.classList.add("flash");
+  stage.setAttribute("aria-label", "다음 코디 보기");
+  hit();
+  state.open = true;
+  await wait(reduced ? 0 : 800);
+  state.busy = false;
+}
+
+function reset() {
+  state.index = 0;
+  sync();
+  if (!state.busy) close();
+}
+
+$("tpo-pills").outerHTML = Object.entries(DATA.tpo).map(([k, label], i) =>
+  `<label class="pill"><input type="radio" name="tpo" id="tpo-${k}" value="${k}"${i ? "" : " checked"}><span>${label}</span></label>`).join("");
+$("controls").addEventListener("input", (e) => {
+  if (e.target.name === "tpo") state.tpo = e.target.value;
+  if (e.target.id === "sound") return;
+  reset();
+});
+$("controls").addEventListener("submit", (e) => e.preventDefault());
+stage.addEventListener("click", pull);              // 닫혀 있으면 열고, 열려 있으면 다음 코디
+stage.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pull(); }
+});
+sync();
+</script>
