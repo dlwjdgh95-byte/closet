@@ -10,6 +10,8 @@ import shutil
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -27,6 +29,13 @@ def representative_temps(closet):
         temp = row["min_temp"] + 1 if row["min_temp"] > -50 else rows[i - 1]["min_temp"] - 5
         temps[target_warmth(closet, temp)] = temp
     return temps
+
+
+def weather(closet):
+    """AccuWeather 커넥터로 날씨를 불러올 곳과, 비 오는 날로 볼 강수확률."""
+    loc = yaml.safe_load((ROOT / "data" / "weather.yaml").read_text(encoding="utf-8"))["location"]
+    return {"name": loc["name"], "key": str(loc["accuweather_key"]),
+            "rain_probability": closet.scoring["rain_probability"]}
 
 
 def build():
@@ -50,6 +59,7 @@ def build():
         "items": {it["id"]: {k: it[k] for k in keep if k in it}
                   for it in closet.items if it["id"] in used},
         "scenarios": scenarios,
+        "weather": weather(closet),
     }
     template = (ROOT / "web" / "template.html").read_text(encoding="utf-8")
     blob = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
