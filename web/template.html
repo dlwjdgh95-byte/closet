@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
-/* 레이아웃: 화면 가득 실사 옷장 한 장. 문이 열리면 안쪽이 흐려지고 오늘 옷이 앞으로 나온다. 그 아래 조건 한 줄. */
+/* 레이아웃: 화면 가득 실사 옷장 한 장. 문이 열리면 빈 옷장 봉에 오늘 옷이 걸리고 바닥에 신발이 놓인다. 그 아래 조건 한 줄. */
 :root {
   color-scheme: dark;
   --ground: #0e0a07;        /* 사진 속 마룻바닥 그늘 */
@@ -40,23 +40,27 @@ body {
   cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
 }
 .stage:focus-visible { outline: 2px solid var(--paper); outline-offset: -4px; }
+/* 사진·영상과 옷이 같은 좌표를 쓰도록, 16:9 장면을 무대에 꽉 차게(cover) 놓는다 */
+.scene {
+  --sw: max(100cqw, 177.78cqh);
+  --sh: max(100cqh, 56.25cqw);
+  position: absolute; width: var(--sw); height: var(--sh);
+  left: calc(50% - var(--sw) / 2); top: calc(50% - var(--sh) / 2);
+}
 .shot {
   position: absolute; inset: 0; width: 100%; height: 100%; max-width: none;
   object-fit: cover; display: block; pointer-events: none;
 }
 .shot.closed { transition: filter .4s ease; }
 .stage:not(.open):not(.playing):hover .shot.closed { filter: brightness(1.09); }
-.shot.inside, .shot.soft { opacity: 0; transition: opacity .7s ease; }
+.shot.inside { opacity: 0; transition: opacity .7s ease; }
 .shot.film { opacity: 0; }
 .stage.playing .film { opacity: 1; }
 .stage.playing .inside, .stage.open .inside { opacity: 1; }
 .stage.playing .inside { transition: none; }
-.stage.open .soft { opacity: 1; transition-duration: .9s; }
-.veil {                          /* 가운데는 조명, 가장자리는 어둠 */
-  position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .9s ease;
-  background:
-    radial-gradient(ellipse 62% 70% at 50% 44%, rgba(255,213,150,.16), transparent 72%),
-    radial-gradient(ellipse 95% 95% at 50% 46%, transparent 38%, rgba(11,7,5,.82));
+.veil {                          /* 가장자리만 살짝 어둡게 */
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity .9s ease;
+  background: radial-gradient(ellipse 90% 95% at 50% 42%, transparent 55%, rgba(11,7,5,.6));
 }
 .stage.open .veil { opacity: 1; }
 .stage::after {                  /* 사진 아랫단을 바닥색으로 잇기 */
@@ -80,15 +84,18 @@ body {
   84% { transform: scale(1.03) translateX(-4px); } 94% { transform: scale(1.03) translateX(4px); }
 }
 
-/* 오늘 옷: 넓은 화면은 한 줄, 세로 화면은 두 줄 */
+/* 오늘 옷: 옷걸이 고리를 영상 마지막 장면의 봉(위 11%, 좌 24%~우 75.6%)에 맞춰 건다 */
 .outfit {
-  --col: min(20cqw, 37cqh);
+  --g: calc(var(--sw) * .15);      /* 옷 한 벌 폭 */
   position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  display: grid; place-content: center; align-items: start;
-  grid-auto-flow: column; grid-auto-columns: var(--col);
-  gap: min(3cqw, 5cqh);
-  padding-bottom: 3cqh;
 }
+.rack, .floor { position: absolute; left: 24%; right: 24.4%; display: flex; justify-content: center; }
+.rack { top: calc(11.1% - var(--g) * .016); align-items: flex-start; gap: calc(var(--sw) * .01); }
+.rack .piece { width: var(--g); min-width: 0; transform-origin: 50% 0; }
+.rack .piece.drape { width: calc(var(--g) * .6); margin-top: calc(var(--g) * -.075); }   /* 머플러는 봉에 걸쳐 둠 */
+.floor { bottom: 3.5%; align-items: flex-end; gap: calc(var(--sw) * .03); }
+.floor .piece { width: calc(var(--g) * .72); flex-direction: column-reverse; }
+.floor .piece figcaption { width: max-content; max-width: calc(var(--g) * 1.35); }
 .piece {
   min-width: 0; margin: 0; position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0;
@@ -109,20 +116,20 @@ body {
   border-radius: 50%; background: var(--wood-3); box-shadow: 0 0 0 1px var(--brass-dim);
 }
 .piece figcaption b { font-weight: 400; }
-.small { align-self: stretch; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
-.small.solo { justify-content: flex-end; }
-.small .piece svg { width: 78%; }
 .stage.open .piece { animation: pop .6s cubic-bezier(.2,1.3,.4,1) forwards; animation-delay: calc(.12s + var(--i) * .16s); }
+.stage.open .rack .piece { animation-name: hang; animation-timing-function: ease-out; animation-duration: .8s; }
 .stage.open .outfit.leaving .piece { animation: leave .25s ease-in forwards; }
 @keyframes pop { from { opacity: 0; transform: translateY(18px) scale(.86); } to { opacity: 1; transform: none; } }
+@keyframes hang {
+  0% { opacity: 0; transform: translateY(-16px) rotate(-4deg); }
+  45% { opacity: 1; transform: rotate(2.5deg); }
+  75% { transform: rotate(-1deg); }
+  100% { opacity: 1; transform: none; }
+}
 @keyframes leave { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px) scale(.96); } }
 @container stage (max-aspect-ratio: 1 / 1) {
-  .outfit {
-    --col: min(38cqw, 27cqh);
-    grid-auto-flow: row; grid-template-columns: repeat(2, var(--col));
-    gap: 2.5cqh 6cqw; padding-bottom: 2cqh;
-  }
-  .piece.wide { grid-column: 1 / -1; justify-self: center; width: var(--col); }
+  .outfit { --g: calc(var(--sw) * .115); }
+  .rack { gap: calc(var(--sw) * .008); }
 }
 
 /* ---------- 조건 ---------- */
@@ -193,14 +200,15 @@ body {
   </defs>
 </svg>
 
-<!-- 닫힌 사진 위로 여는 영상이 지나가고, 영상 마지막 장면(inside)에서 멈춘 뒤 흐린 장면(soft)으로 바뀝니다. -->
+<!-- 닫힌 사진(영상 첫 장면) 위로 여는 영상이 지나가고, 영상 마지막 장면(inside)에서 멈춘 채 옷이 걸립니다. -->
 <div class="stage" id="stage" role="button" tabindex="0" aria-label="옷장 열기">
-  <img class="shot closed" src="assets/closed.jpg" alt="" draggable="false">
-  <img class="shot inside" src="assets/inside.jpg" alt="" draggable="false">
-  <video class="shot film" id="film" src="assets/opening.mp4" muted playsinline preload="auto" disablepictureinpicture tabindex="-1"></video>
-  <img class="shot soft" src="assets/inside-soft.jpg" alt="" draggable="false">
+  <div class="scene">
+    <img class="shot closed" src="assets/closed.jpg" alt="" draggable="false">
+    <img class="shot inside" src="assets/inside.jpg" alt="" draggable="false">
+    <video class="shot film" id="film" src="assets/opening.mp4" muted playsinline preload="auto" disablepictureinpicture tabindex="-1"></video>
+    <div class="outfit" id="interior" aria-live="polite"></div>
+  </div>
   <div class="veil"></div>
-  <div class="outfit" id="interior" aria-live="polite"></div>
   <div class="burst"></div>
 </div>
 
@@ -307,9 +315,9 @@ function garment(item) {
     else if (c === "corduroy") art += detail(lines([[41, 20, 37, 142], [47, 20, 44, 142], [53, 20, 51, 142], [67, 20, 69, 142], [73, 20, 76, 142], [79, 20, 83, 142]]));
     else if (c === "sweatpants") art += detail(lines([[31, 134, 56, 134], [64, 134, 89, 134]]));
     else if (!short) art += detail(lines([[40, 20, 46, 32], [80, 20, 74, 32]]));
-    box = short ? "0 -14 120 98" : "0 -14 120 164";
+    box = short ? "0 -9 120 93" : "0 -9 120 159";   // 고리 끝 높이를 윗옷과 맞춤
   } else if (item.slot === "shoes") {
-    scale = false; box = "0 0 122 72";
+    scale = false; box = c === "boots" ? "0 0 122 72" : c === "sandals" ? "0 18 122 54" : "0 26 122 46";   // 신발 위 빈칸을 잘라 꼬리표를 붙임
     const sole = c === "sneakers" ? "#f1ede2" : "#1a110b";
     if (c === "sandals") {
       art = `<path d="M8,58 L114,58 L114,66 L8,66 Z" fill="${sole}" stroke="rgba(239,230,210,.5)" stroke-width="1.2"/>` +
@@ -420,9 +428,10 @@ function renderOutfit(o) {
   let i = 0;
   const caption = (item) => `<b>${KIND[item.category] || item.category}${item.brand ? ":" : ""}</b>` + (item.brand ? " " + DATA.brands[item.brand] : "");
   const piece = (item, cls = "") => `<figure class="piece ${cls}" style="--i:${i++}">${garment(item)}<figcaption>${caption(item)}</figcaption></figure>`;
-  let html = it("outer") ? piece(it("outer")) + piece(it("top")) : piece(it("top"), "wide");
-  html += piece(it("bottom"));
-  html += `<div class="small ${it("accessory") ? "" : "solo"}">` + (it("accessory") ? piece(it("accessory")) : "") + piece(it("shoes")) + "</div>";
+  const put = (slot, cls) => it(slot) ? piece(it(slot), cls) : "";
+  const drape = it("accessory") && it("accessory").category === "muffler";   // 머플러만 봉에, 나머지는 바닥에
+  const html = `<div class="rack">${put("outer")}${put("top")}${put("bottom")}${drape ? put("accessory", "drape") : ""}</div>` +
+    `<div class="floor">${put("shoes")}${drape ? "" : put("accessory")}</div>`;
   $("interior").classList.remove("leaving");
   $("interior").innerHTML = html;
 }
