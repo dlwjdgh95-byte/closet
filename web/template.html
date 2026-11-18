@@ -84,15 +84,42 @@ body {
   84% { transform: scale(1.03) translateX(-4px); } 94% { transform: scale(1.03) translateX(4px); }
 }
 
-/* 오늘 옷: 옷걸이 고리를 영상 마지막 장면의 봉(위 11%, 좌 24%~우 75.6%)에 맞춰 건다 */
+/* 오늘 옷: 위칸은 영상 마지막 장면의 봉(위 11%, 좌 24%~우 75.6%)에, 아래칸은 뒤판 놋쇠 고리와 바닥에 둔다.
+   겉옷이 있으면  [겉옷 | 윗옷] / [머플러·신발 | 바지]
+   겉옷이 없으면  [윗옷 | 머플러·신발] / [바지 | 〃] */
 .outfit {
-  --g: calc(var(--sw) * .15);      /* 옷 한 벌 폭 */
+  --g: calc(var(--sw) * .16);      /* 옷 한 벌 폭 */
   position: absolute; inset: 0; z-index: 3; pointer-events: none;
 }
-.rack, .floor { position: absolute; left: 24%; right: 24.4%; display: flex; justify-content: center; }
-.rack { top: calc(11.1% - var(--g) * .016); align-items: flex-start; gap: calc(var(--sw) * .01); }
-.rack .piece { width: var(--g); min-width: 0; transform-origin: 50% 0; }
-.rack .piece.drape { width: calc(var(--g) * .6); margin-top: calc(var(--g) * -.075); }   /* 머플러는 봉에 걸쳐 둠 */
+.set {
+  position: absolute; left: 24%; right: 24.4%; top: calc(11.1% - var(--g) * .016); bottom: 3.5%;
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: minmax(0, 49fr) minmax(0, 51fr);
+  column-gap: calc(var(--sw) * .01);
+  grid-template-areas: "a b" "s p";
+}
+.set.no-outer { grid-template-areas: "b s" "p s"; }
+.set > * { min-width: 0; min-height: 0; justify-self: center; }
+.set .outer { grid-area: a; }
+.set .top { grid-area: b; }
+.set .bottom { grid-area: p; }
+.side { grid-area: s; justify-self: stretch; display: flex; flex-direction: column; align-items: center; }
+.piece.hung { width: var(--g); transform-origin: 50% 0; }
+.piece.bottom { --pw: calc(var(--g) * .9); --px: 53%; --py: calc(var(--pw) * .033); width: var(--pw); }
+.piece.drape { --pw: calc(var(--g) * .55); --px: 50%; --py: calc(var(--pw) * .17); width: var(--pw); }
+.set.no-outer .piece.drape { margin-top: calc(var(--pw) * -.135); }   /* 겉옷이 없으면 봉에 걸침 */
+.set.no-outer .piece.drape::before { display: none; }
+.peg::before {                   /* 뒤판에 박힌 놋쇠 고리 */
+  content: ""; position: absolute; z-index: -1;
+  width: calc(var(--pw) * .08); aspect-ratio: 1; border-radius: 50%;
+  left: calc(var(--px) - var(--pw) * .04); top: calc(var(--py) - var(--pw) * .04);
+  background: radial-gradient(circle at 35% 35%, var(--brass-hi), var(--brass) 45%, var(--brass-dim));
+  box-shadow: 1px 2px 3px rgba(0,0,0,.6), 0 0 0 calc(var(--pw) * .012) rgba(31,16,8,.55);
+}
+.floor { margin-top: auto; display: flex; align-items: flex-end; justify-content: center; gap: calc(var(--sw) * .02); }
+.floor .piece { width: calc(var(--g) * .62); flex-direction: column-reverse; }
+.floor .piece figcaption { width: max-content; max-width: calc(var(--g) * 1.2); }
+.set.no-outer .floor { flex-direction: column-reverse; align-items: center; gap: calc(var(--sw) * .012); }   /* 칸이 높으니 가방을 신발 위로 */
+.piece { width: var(--g); min-width: 0; transform-origin: 50% 0; }
 .floor { bottom: 3.5%; align-items: flex-end; gap: calc(var(--sw) * .03); }
 .floor .piece { width: calc(var(--g) * .72); flex-direction: column-reverse; }
 .floor .piece figcaption { width: max-content; max-width: calc(var(--g) * 1.35); }
@@ -117,7 +144,7 @@ body {
 }
 .piece figcaption b { font-weight: 400; }
 .stage.open .piece { animation: pop .6s cubic-bezier(.2,1.3,.4,1) forwards; animation-delay: calc(.12s + var(--i) * .16s); }
-.stage.open .rack .piece { animation-name: hang; animation-timing-function: ease-out; animation-duration: .8s; }
+.stage.open .piece.hung { animation-name: hang; animation-timing-function: ease-out; animation-duration: .8s; }
 .stage.open .outfit.leaving .piece { animation: leave .25s ease-in forwards; }
 @keyframes pop { from { opacity: 0; transform: translateY(18px) scale(.86); } to { opacity: 1; transform: none; } }
 @keyframes hang {
@@ -128,8 +155,9 @@ body {
 }
 @keyframes leave { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px) scale(.96); } }
 @container stage (max-aspect-ratio: 1 / 1) {
-  .outfit { --g: calc(var(--sw) * .115); }
-  .rack { gap: calc(var(--sw) * .008); }
+  .outfit { --g: calc(var(--sw) * .14); }
+  .set { column-gap: calc(var(--sw) * .006); }
+  .floor .piece figcaption { max-width: calc(var(--g) * .95); }
 }
 
 /* ---------- 조건 ---------- */
@@ -429,9 +457,10 @@ function renderOutfit(o) {
   const caption = (item) => `<b>${KIND[item.category] || item.category}${item.brand ? ":" : ""}</b>` + (item.brand ? " " + DATA.brands[item.brand] : "");
   const piece = (item, cls = "") => `<figure class="piece ${cls}" style="--i:${i++}">${garment(item)}<figcaption>${caption(item)}</figcaption></figure>`;
   const put = (slot, cls) => it(slot) ? piece(it(slot), cls) : "";
-  const drape = it("accessory") && it("accessory").category === "muffler";   // 머플러만 봉에, 나머지는 바닥에
-  const html = `<div class="rack">${put("outer")}${put("top")}${put("bottom")}${drape ? put("accessory", "drape") : ""}</div>` +
-    `<div class="floor">${put("shoes")}${drape ? "" : put("accessory")}</div>`;
+  const drape = it("accessory") && it("accessory").category === "muffler";   // 머플러는 걸고, 가방·모자는 바닥에
+  const html = `<div class="set${it("outer") ? "" : " no-outer"}">` +
+    put("outer", "hung outer") + put("top", "hung top") + put("bottom", "hung bottom peg") +
+    `<div class="side">${drape ? put("accessory", "hung drape peg") : ""}<div class="floor">${put("shoes")}${drape ? "" : put("accessory")}</div></div></div>`;
   $("interior").classList.remove("leaving");
   $("interior").innerHTML = html;
 }
