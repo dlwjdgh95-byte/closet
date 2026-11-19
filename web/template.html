@@ -143,8 +143,8 @@ body {
   border-radius: 50%; background: var(--wood-3); box-shadow: 0 0 0 1px var(--brass-dim);
 }
 .piece figcaption b { font-weight: 400; }
-.stage.open .piece { animation: pop .6s cubic-bezier(.2,1.3,.4,1) forwards; animation-delay: calc(.12s + var(--i) * .16s); }
-.stage.open .piece.hung { animation-name: hang; animation-timing-function: ease-out; animation-duration: .8s; }
+.stage.open .piece { animation: pop .6s cubic-bezier(.2,1.3,.4,1) forwards; animation-delay: calc(.05s + var(--i) * .09s); }
+.stage.open .piece.hung { animation-name: hang; animation-timing-function: ease-out; animation-duration: .6s; }
 .stage.open .outfit.leaving .piece { animation: leave .25s ease-in forwards; }
 @keyframes pop { from { opacity: 0; transform: translateY(18px) scale(.86); } to { opacity: 1; transform: none; } }
 @keyframes hang {
@@ -186,6 +186,17 @@ body {
 .temp output { font-variant-numeric: tabular-nums; min-width: 3.4em; font-weight: 600; }
 .check span { padding: 5px 12px; border: 1px solid var(--line); border-radius: 3px; cursor: pointer; color: var(--muted); }
 .check input:checked + span { border-color: var(--brass); color: var(--brass); }
+.wx {
+  display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 13px; text-align: center; margin: -22px 0 0; padding-block: 0 26px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wx button {
+  font: inherit; color: var(--brass); background: none; cursor: pointer;
+  border: 1px solid var(--brass-dim); border-radius: 999px; padding: 3px 11px;
+}
+.wx button:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
 .empty {
   text-align: center; color: var(--muted); margin: -20px 0 0; padding-block: 0 32px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -253,6 +264,7 @@ body {
   <label class="check"><input type="checkbox" id="rain"><span>비</span></label>
   <label class="check"><input type="checkbox" id="sound" checked><span>소리</span></label>
 </form>
+<p class="wx" id="wx" aria-live="polite" hidden><span class="wx-text"></span><button type="button" hidden></button></p>
 <p class="empty" id="empty" hidden>이 조건에 맞는 옷이 없습니다.</p>
 
 <script>
@@ -440,7 +452,7 @@ function hit() {                    // 빵
 /* ---------- 상태 ---------- */
 const stage = $("stage"), film = $("film");
 const state = { tpo: Object.keys(DATA.tpo)[0], index: 0, busy: false, open: false, opened: 0 };
-const FIRST_RATE = 2, AGAIN_RATE = 2.8;   // 10초짜리 영상을 처음엔 5초, 다시 열 땐 더 빠르게
+const FIRST_RATE = 1, AGAIN_RATE = 1.3;   // 2.6초짜리 영상을 그대로, 다시 열 땐 조금 더 빠르게
 
 function warmthFor(temp) {
   for (const row of DATA.warmth_by_temp) if (temp >= row.min_temp) return row.warmth;
@@ -485,7 +497,7 @@ function playFilm(rate) {
       started = true;
       film.playbackRate = rate;
       stage.classList.add("playing");
-      const left = ((film.duration || 10) - film.currentTime) / rate;
+      const left = ((film.duration || 2.6) - film.currentTime) / rate;
       roll(left);
       clearTimeout(guard);
       guard = setTimeout(() => finish(true), left * 1000 + 4000);   // 중간에 멈춰도 옷은 보여 줌
@@ -523,10 +535,10 @@ async function pull() {
   if (state.open) {                                   // 열려 있으면 다음 순위 코디로
     state.index += 1;
     $("interior").classList.add("leaving");
-    await rollFor(reduced ? 0 : 900);
+    await rollFor(reduced ? 0 : 600);
   } else {
     const played = await playFilm(state.opened++ ? AGAIN_RATE : FIRST_RATE);
-    if (!played) await rollFor(reduced ? 0 : 1400);
+    if (!played) await rollFor(reduced ? 0 : 900);
   }
   const list = outfits();                             // 여는 사이 조건이 바뀌었을 수 있음
   if (!list.length) { close(); state.busy = false; return; }
@@ -539,7 +551,7 @@ async function pull() {
   stage.setAttribute("aria-label", "다음 코디 보기");
   hit();
   state.open = true;
-  await wait(reduced ? 0 : 800);
+  await wait(reduced ? 0 : 500);
   state.busy = false;
 }
 
@@ -554,6 +566,7 @@ $("tpo-pills").outerHTML = Object.entries(DATA.tpo).map(([k, label], i) =>
 $("controls").addEventListener("input", (e) => {
   if (e.target.name === "tpo") state.tpo = e.target.value;
   if (e.target.id === "sound") return;
+  if ((e.target.id === "temp" || e.target.id === "rain") && wx.value) { wx.manual = true; wxStatus(); }
   reset();
 });
 $("controls").addEventListener("submit", (e) => e.preventDefault());
@@ -562,4 +575,91 @@ stage.addEventListener("keydown", (e) => {
   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pull(); }
 });
 sync();
+
+/* ---------- 오늘 날씨: 보는 사람의 AccuWeather 커넥터 ----------
+   커넥터가 없거나 허용되지 않으면 지금처럼 직접 고릅니다. */
+const WX = { server: "AccuWeather®", tool: "widgets-daily-claude" };
+const wx = { mcp: null, value: null, manual: false };
+const wxInput = () => ({ queryParams: { locationKey: DATA.weather.key, unit: "metric", lang: "ko" } });
+
+function wxShow(text, action) {
+  const el = $("wx"), b = el.querySelector("button");
+  el.hidden = !text;
+  el.querySelector(".wx-text").textContent = text || "";
+  b.hidden = !action;
+  if (action) { b.textContent = action.label; b.onclick = action.run; }
+}
+
+/* 일별 예보에서 오늘(저녁 7시가 지났으면 내일) 낮의 체감기온과 강수확률 */
+function wxRead(payload) {
+  const days = payload && payload.dailyForecast;
+  if (!Array.isArray(days) || !days.length) return null;
+  const loc = payload.location || {};
+  let i = Math.max(0, days.findIndex((d) => String(d.date || "").slice(0, 10) === String(loc.localIsoDate || "").slice(0, 10)));
+  const tomorrow = loc.isBefore7PM === false && !!days[i + 1];
+  if (tomorrow) i += 1;
+  const day = days[i].day || {};
+  const feel = Number(day.realFeelValue ?? day.temperature);
+  if (!Number.isFinite(feel)) return null;
+  return { when: tomorrow ? "내일" : "오늘", feel: Math.round(feel), rain: Math.round(Number(day.rainProbabilityValue) || 0) };
+}
+
+function wxStatus() {
+  const v = wx.value;
+  if (!v) return;
+  const at = new Date(v.at).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+  const text = `AccuWeather · ${DATA.weather.name} ${v.when} 낮 체감 ${v.feel}℃ · 비 ${v.rain}% · ${at} 기준`;
+  wxShow(text, wx.manual ? { label: "날씨대로", run: wxApply } : null);
+}
+
+function wxApply() {
+  const v = wx.value, t = $("temp");
+  if (!v) return;
+  t.value = Math.min(+t.max, Math.max(+t.min, v.feel));
+  $("rain").checked = v.rain >= DATA.weather.rain_probability;
+  wx.manual = false;
+  reset();
+  wxStatus();
+}
+
+function wxFail(error) {
+  const code = (error && error.code) || "upstream_error";
+  const retract = (text, action) => { wx.value = null; wx.manual = false; wxShow(text, action); };
+  if (code === "user_changed") return;
+  if (["not_granted", "capability_disabled", "capability_removed"].includes(code)) return retract("");
+  if (code === "needs_reauth") return retract("AccuWeather 로그인이 끝났습니다. claude.ai 설정 → 커넥터에서 다시 연결하면 날씨가 들어갑니다.");
+  if (["server_not_connected", "server_not_found", "selection_required"].includes(code))
+    return retract("claude.ai 설정 → 커넥터에서 AccuWeather를 연결하면 오늘 날씨가 자동으로 들어갑니다.");
+  if (code === "approval_required") return retract("날씨를 불러오려면 허용이 필요합니다.", { label: "날씨 불러오기", run: wxAsk });
+  if (["not_in_manifest", "blocked_by_policy", "consent_required"].includes(code))
+    return retract("이 페이지에서 AccuWeather 사용이 허용되지 않았습니다. 날씨는 직접 골라 주세요.");
+  if (!wx.value) wxShow("AccuWeather가 응답하지 않습니다. 지금은 날씨를 직접 골라 주세요.");
+}
+
+function wxData(result) {
+  const v = wxRead(result && result.payload);
+  if (!v) return wx.value ? null : wxShow("날씨 응답을 읽지 못했습니다. 직접 골라 주세요.");
+  v.at = (result.cache && result.cache.storedAt) || Date.now();
+  wx.value = v;
+  if (!wx.manual && !state.open && !state.busy) wxApply();
+  else { wx.manual = true; wxStatus(); }   // 옷장이 열려 있으면 바로 바꾸지 않고 버튼으로
+}
+
+async function wxAsk() {
+  wxShow("AccuWeather에 묻는 중…");
+  try { wxData(await wx.mcp.callTool(WX.server, WX.tool, wxInput())); }
+  catch (e) { wxFail(e); }
+}
+
+(async () => {
+  if (!DATA.weather || !window.claude || typeof window.claude.use !== "function") return;
+  let mcp = null;
+  try { mcp = await window.claude.use("mcp"); } catch (e) { mcp = null; }
+  if (!mcp) return;
+  wx.mcp = mcp;
+  wxShow("AccuWeather에서 오늘 날씨를 불러오는 중…");
+  mcp.watchTool(WX.server, WX.tool, wxInput(),
+    (ev) => (ev.type === "data" ? wxData(ev.result) : wxFail(ev.error)),
+    { cache: { staleTime: 30 * 60e3, gcTime: 12 * 3600e3 }, refetchInterval: 60 * 60e3 });
+})();
 </script>

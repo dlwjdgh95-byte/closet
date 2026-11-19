@@ -1,0 +1,6 @@
+# 옷장 페이지가 AccuWeather 커넥터로 날씨를 불러올 곳.
+# 다른 곳으로 바꾸려면 AccuWeather의 지역 검색(widgets-search-claude)으로 찾은 locationKey를 넣고
+# scripts/build_page.py 를 다시 실행합니다.
+location:
+  name: 서울
+  accuweather_key: "3430003"   # 명동, 서울시
